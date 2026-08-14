@@ -1,10 +1,28 @@
 import { prismaClient } from "../../prisma/prisma";
-import { RegisterInput } from "../dtos/input/auth.input";
+import { LoginInput, RegisterInput } from "../dtos/input/auth.input";
 import { User } from "../generated/prisma/client";
-import { hashPassword } from "../utils/hash";
+import { hashPassword, comparePasswords } from "../utils/hash";
 import { signJwt } from "../utils/jwt";
 
 export class AuthService {
+  async login(data: LoginInput) {
+    const user = await prismaClient.user.findUnique({
+      where: { email: data.email },
+    });
+
+    if (!user) {
+      throw new Error("E-mail ou senha incorretos!");
+    }
+
+    const isMatch = await comparePasswords(data.password, user.password);
+
+    if (!isMatch) {
+      throw new Error("E-mail ou senha incorretos!");
+    }
+
+    return this.generateTokens(user);
+  }
+
   async register(data: RegisterInput) {
     const existingUser = await prismaClient.user.findUnique({
       where: { email: data.email },
