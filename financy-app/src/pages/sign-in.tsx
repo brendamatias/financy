@@ -9,7 +9,7 @@ import { Link } from "@/components/ui/link";
 
 import logo from "@/assets/logo.svg";
 
-function Login() {
+function SignIn() {
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
   }
@@ -74,4 +74,4 @@ function Login() {
   );
 }
 
-export { Login };
+export { SignIn };
