@@ -15,6 +15,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { DialogCreateCategory } from "@/components/dialog-create-category";
 import { CategoryIcon, type CategoryColor } from "@/components/category-icon";
 import { TitleSection } from "@/components/title-section";
 import { Button } from "@/components/ui/button";
@@ -134,10 +135,12 @@ function Categories() {
           </p>
         </div>
 
-        <Button size="sm">
-          <Plus />
-          Nova categoria
-        </Button>
+        <DialogCreateCategory>
+          <Button size="sm">
+            <Plus />
+            Nova categoria
+          </Button>
+        </DialogCreateCategory>
       </div>
 
       <section className="grid gap-6 md:grid-cols-3">
