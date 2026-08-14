@@ -1,18 +1,13 @@
 import * as React from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  Search,
-  SquarePen,
-  Trash,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 
-import { CategoryIcon } from "@/components/category-icon";
 import { DialogCreateTransaction } from "@/components/dialog-create-transaction";
+import {
+  TransactionRow,
+  TransactionRowSkeleton,
+} from "@/components/transaction-row";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { IconButton } from "@/components/ui/icon-button";
 import { InputField } from "@/components/ui/input-field";
 import { PaginationButton } from "@/components/ui/pagination-button";
 import { SelectField } from "@/components/ui/select-field";
@@ -24,10 +19,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tag } from "@/components/ui/tag";
-import { TransactionType } from "@/components/ui/transaction-type";
-import { getCategoryIcon } from "@/lib/category-icons";
-import { formatDate, formatSignedCurrency } from "@/lib/format";
 import {
   useCategories,
   useDeleteTransaction,
@@ -156,11 +147,9 @@ function Transactions() {
 
           <TableBody>
             {isLoading ? (
-              <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={6} className="text-center text-gray-600">
-                  Carregando transações...
-                </TableCell>
-              </TableRow>
+              Array.from({ length: PAGE_SIZE }, (_, index) => (
+                <TransactionRowSkeleton key={index} />
+              ))
             ) : transactions.length === 0 ? (
               <TableRow className="hover:bg-transparent">
                 <TableCell colSpan={6} className="text-center text-gray-600">
@@ -169,62 +158,12 @@ function Transactions() {
               </TableRow>
             ) : (
               transactions.map((transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-4 font-medium">
-                      <CategoryIcon
-                        icon={getCategoryIcon(transaction.category.icon)}
-                        color={transaction.category.color}
-                      />
-                      {transaction.description}
-                    </div>
-                  </TableCell>
-
-                  <TableCell className="text-center text-sm text-gray-600">
-                    {formatDate(transaction.date)}
-                  </TableCell>
-
-                  <TableCell>
-                    <div className="flex justify-center">
-                      <Tag variant={transaction.category.color}>
-                        {transaction.category.name}
-                      </Tag>
-                    </div>
-                  </TableCell>
-
-                  <TableCell>
-                    <div className="flex justify-center">
-                      <TransactionType variant={transaction.type} />
-                    </div>
-                  </TableCell>
-
-                  <TableCell className="text-right text-sm font-semibold">
-                    {formatSignedCurrency(
-                      transaction.type === "expense"
-                        ? -transaction.amount
-                        : transaction.amount,
-                    )}
-                  </TableCell>
-
-                  <TableCell>
-                    <div className="flex justify-end gap-2">
-                      <IconButton
-                        variant="danger"
-                        disabled={isPending}
-                        onClick={() => deleteTransaction(transaction.id)}
-                        aria-label={`Excluir ${transaction.description}`}
-                      >
-                        <Trash />
-                      </IconButton>
-
-                      <IconButton
-                        aria-label={`Editar ${transaction.description}`}
-                      >
-                        <SquarePen />
-                      </IconButton>
-                    </div>
-                  </TableCell>
-                </TableRow>
+                <TransactionRow
+                  key={transaction.id}
+                  transaction={transaction}
+                  onDelete={deleteTransaction}
+                  isDeleting={isPending}
+                />
               ))
             )}
           </TableBody>

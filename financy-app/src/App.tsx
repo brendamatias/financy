@@ -2,6 +2,15 @@ import { Mail, Tag as TagIcon, Trash2, UserPlus } from "lucide-react";
 
 import { CategoryCard, CategoryCardSkeleton } from "@/components/category-card";
 import { SummaryCard, SummaryCardSkeleton } from "@/components/summary-card";
+import {
+  TransactionRow,
+  TransactionRowSkeleton,
+} from "@/components/transaction-row";
+import { Card } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { InputField } from "@/components/ui/input-field";
@@ -34,6 +43,20 @@ const exampleCategory: Category = {
   transactionsCount: 12,
 };
 
+const exampleTransaction: Transaction = {
+  id: "example",
+  description: "Jantar no Restaurante",
+  date: "2025-11-30",
+  amount: 89.5,
+  type: "expense",
+  category: {
+    id: "1",
+    name: "Alimentação",
+    color: "blue",
+    icon: "food",
+  },
+};
+
 function App() {
   return (
     <main className="flex flex-col gap-10 text-left">
@@ -51,6 +74,15 @@ function App() {
         />
         <SummaryCardSkeleton />
       </section>
+
+      <Card className="p-0">
+        <Table>
+          <TableBody>
+            <TransactionRow transaction={exampleTransaction} />
+            <TransactionRowSkeleton />
+          </TableBody>
+        </Table>
+      </Card>
 
       <h1 className="text-3xl font-medium">Button</h1>
 
