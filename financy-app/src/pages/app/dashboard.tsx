@@ -13,12 +13,12 @@ import {
 } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 
+import { CategoryIcon, type CategoryColor } from "@/components/category-icon";
+import { TitleSection } from "@/components/title-section";
 import { Card } from "@/components/ui/card";
 import { Link } from "@/components/ui/link";
 import { Tag } from "@/components/ui/tag";
 import { cn } from "@/lib/utils";
-
-type TagVariant = React.ComponentProps<typeof Tag>["variant"];
 
 const summary = [
   {
@@ -46,7 +46,7 @@ const transactions: {
   title: string;
   date: string;
   category: string;
-  variant: TagVariant;
+  color: CategoryColor;
   amount: string;
   type: "income" | "expense";
   icon: LucideIcon;
@@ -56,7 +56,7 @@ const transactions: {
     title: "Pagamento de Salário",
     date: "01/12/25",
     category: "Receita",
-    variant: "green",
+    color: "green",
     amount: "+ R$ 4.250,00",
     type: "income",
     icon: BriefcaseBusiness,
@@ -66,7 +66,7 @@ const transactions: {
     title: "Jantar no Restaurante",
     date: "30/11/25",
     category: "Alimentação",
-    variant: "blue",
+    color: "blue",
     amount: "- R$ 89,50",
     type: "expense",
     icon: Utensils,
@@ -76,7 +76,7 @@ const transactions: {
     title: "Posto de Gasolina",
     date: "29/11/25",
     category: "Transporte",
-    variant: "purple",
+    color: "purple",
     amount: "- R$ 100,00",
     type: "expense",
     icon: CarFront,
@@ -86,7 +86,7 @@ const transactions: {
     title: "Compras no Mercado",
     date: "28/11/25",
     category: "Mercado",
-    variant: "orange",
+    color: "orange",
     amount: "- R$ 156,80",
     type: "expense",
     icon: ShoppingCart,
@@ -96,7 +96,7 @@ const transactions: {
     title: "Retorno de Investimento",
     date: "26/11/25",
     category: "Investimento",
-    variant: "green",
+    color: "green",
     amount: "+ R$ 340,25",
     type: "income",
     icon: PiggyBank,
@@ -106,49 +106,40 @@ const transactions: {
 const categories: {
   id: number;
   name: string;
-  variant: TagVariant;
+  color: CategoryColor;
   items: number;
   total: string;
 }[] = [
   {
     id: 1,
     name: "Alimentação",
-    variant: "blue",
+    color: "blue",
     items: 12,
     total: "R$ 542,30",
   },
   {
     id: 2,
     name: "Transporte",
-    variant: "purple",
+    color: "purple",
     items: 8,
     total: "R$ 385,50",
   },
-  { id: 3, name: "Mercado", variant: "orange", items: 3, total: "R$ 298,75" },
+  { id: 3, name: "Mercado", color: "orange", items: 3, total: "R$ 298,75" },
   {
     id: 4,
     name: "Entretenimento",
-    variant: "pink",
+    color: "pink",
     items: 2,
     total: "R$ 186,20",
   },
   {
     id: 5,
     name: "Utilidades",
-    variant: "yellow",
+    color: "yellow",
     items: 7,
     total: "R$ 245,80",
   },
 ];
-
-const iconBackground: Record<string, string> = {
-  green: "bg-green-light text-green-dark",
-  blue: "bg-blue-light text-blue-dark",
-  purple: "bg-purple-light text-purple-dark",
-  orange: "bg-orange-light text-orange-dark",
-  pink: "bg-pink-light text-pink-dark",
-  yellow: "bg-yellow-light text-yellow-dark",
-};
 
 function SectionHeader({
   title,
@@ -170,14 +161,6 @@ function SectionHeader({
         </RouterLink>
       </Link>
     </div>
-  );
-}
-
-function TitleSection({ text }: { text: string }) {
-  return (
-    <span className="text-xs tracking-wider text-gray-500 uppercase font-medium">
-      {text}
-    </span>
   );
 }
 
@@ -213,14 +196,10 @@ function Dashboard() {
                 key={transaction.id}
                 className="flex items-center gap-4 border-b border-gray-200 px-6 h-20"
               >
-                <span
-                  className={cn(
-                    "flex size-10 shrink-0 items-center justify-center rounded-lg [&>svg]:size-4",
-                    iconBackground[transaction.variant ?? "gray"],
-                  )}
-                >
-                  <transaction.icon />
-                </span>
+                <CategoryIcon
+                  icon={transaction.icon}
+                  color={transaction.color}
+                />
 
                 <div className="flex flex-1 flex-col">
                   <span className="text-base font-medium text-gray-800">
@@ -231,7 +210,7 @@ function Dashboard() {
                   </span>
                 </div>
 
-                <Tag variant={transaction.variant}>{transaction.category}</Tag>
+                <Tag variant={transaction.color}>{transaction.category}</Tag>
 
                 <div className="flex w-40 items-center justify-end gap-2">
                   <strong className="text-sm font-semibold text-gray-800">
@@ -266,7 +245,7 @@ function Dashboard() {
           <ul className="flex flex-col gap-4 p-6">
             {categories.map((category) => (
               <li key={category.id} className="flex items-center gap-4">
-                <Tag variant={category.variant}>{category.name}</Tag>
+                <Tag variant={category.color}>{category.name}</Tag>
 
                 <span className="ml-auto text-sm text-gray-600">
                   {category.items} itens
