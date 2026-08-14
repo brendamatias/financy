@@ -1,56 +1,57 @@
-import { HttpResponse, delay, http } from "msw";
+import { HttpResponse, delay, graphql } from "msw";
 
 import { db } from "@/mocks/data";
 
+const api = graphql.link(import.meta.env.VITE_GRAPHQL_URL);
+
+const MOCK_PASSWORD = "12345678";
+
+function buildPayload(user: User) {
+  return {
+    token: crypto.randomUUID(),
+    refreshToken: crypto.randomUUID(),
+    user,
+  };
+}
+
 export const authHandlers = [
-  http.post("/api/auth/sign-in", async ({ request }) => {
-    await delay(600);
+  api.mutation<LoginResponse, { data: LoginRequest }>(
+    "Login",
+    async ({ variables }) => {
+      await delay(600);
 
-    const { email, password } = (await request.json()) as SignInRequest;
+      const { email, password } = variables.data;
 
-    if (email !== db.user.email || password !== db.credentials.password) {
-      return HttpResponse.json(
-        { message: "E-mail ou senha inválidos." },
-        { status: 401 },
-      );
-    }
+      if (email !== db.user.email || password !== MOCK_PASSWORD) {
+        return HttpResponse.json({
+          errors: [{ message: "E-mail ou senha incorretos!" }],
+        });
+      }
 
-    return HttpResponse.json({
-      token: crypto.randomUUID(),
-      user: db.user,
-    } satisfies AuthResponse);
-  }),
+      return HttpResponse.json({
+        data: { login: buildPayload(db.user) },
+      });
+    },
+  ),
 
-  http.post("/api/auth/sign-up", async ({ request }) => {
-    await delay(600);
+  api.mutation<RegisterResponse, { data: RegisterRequest }>(
+    "Register",
+    async ({ variables }) => {
+      await delay(600);
 
-    const { name, email, password } = (await request.json()) as SignUpRequest;
+      const { name, email } = variables.data;
 
-    db.user = { id: crypto.randomUUID(), name, email };
-    db.credentials.password = password;
+      db.user = {
+        ...db.user,
+        id: crypto.randomUUID(),
+        name,
+        email,
+        updatedAt: new Date().toISOString(),
+      };
 
-    return HttpResponse.json(
-      {
-        token: crypto.randomUUID(),
-        user: db.user,
-      } satisfies AuthResponse,
-      { status: 201 },
-    );
-  }),
-
-  http.get("/api/me", async () => {
-    await delay(200);
-
-    return HttpResponse.json(db.user);
-  }),
-
-  http.put("/api/me", async ({ request }) => {
-    await delay(400);
-
-    const { name } = (await request.json()) as { name: string };
-
-    db.user = { ...db.user, name };
-
-    return HttpResponse.json(db.user);
-  }),
+      return HttpResponse.json({
+        data: { register: buildPayload(db.user) },
+      });
+    },
+  ),
 ];

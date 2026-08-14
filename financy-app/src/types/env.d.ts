@@ -2,6 +2,8 @@
 
 interface ImportMetaEnv {
   readonly VITE_API_URL: string;
+  readonly VITE_GRAPHQL_URL: string;
+  readonly VITE_GRAPHQL_MOCK?: string;
 }
 
 interface ImportMeta {

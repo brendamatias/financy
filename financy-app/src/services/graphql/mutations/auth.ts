@@ -1,0 +1,39 @@
+import { gql, type TypedDocumentNode } from "@apollo/client";
+
+export const LOGIN_MUTATION: TypedDocumentNode<
+  LoginResponse,
+  { data: LoginRequest }
+> = gql`
+  mutation Login($data: LoginInput!) {
+    login(data: $data) {
+      token
+      refreshToken
+      user {
+        id
+        name
+        email
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`;
+
+export const REGISTER_MUTATION: TypedDocumentNode<
+  RegisterResponse,
+  { data: RegisterRequest }
+> = gql`
+  mutation Register($data: RegisterInput!) {
+    register(data: $data) {
+      token
+      refreshToken
+      user {
+        id
+        name
+        email
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`;

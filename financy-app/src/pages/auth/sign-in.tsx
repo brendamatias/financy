@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { FieldSeparator } from "@/components/ui/field";
 import { InputField } from "@/components/ui/input-field";
 import { Link } from "@/components/ui/link";
-import { useSignIn } from "@/services";
+import { useAuthStore } from "@/stores/auth";
 
 const schema = z.object({
   email: z
@@ -24,7 +24,8 @@ type SignInFormData = z.infer<typeof schema>;
 
 function SignIn() {
   const navigate = useNavigate();
-  const { mutate: signIn, isPending } = useSignIn();
+  const signIn = useAuthStore((state) => state.signIn);
+  const isLoading = useAuthStore((state) => state.isLoading);
 
   const {
     register,
@@ -40,13 +41,12 @@ function SignIn() {
     },
   });
 
-  function onSubmit({ email, password }: SignInFormData) {
-    signIn(
-      { email, password },
-      {
-        onSuccess: () => navigate("/dashboard"),
-      },
-    );
+  async function onSubmit({ email, password }: SignInFormData) {
+    const success = await signIn({ email, password });
+
+    if (success) {
+      navigate("/dashboard");
+    }
   }
 
   return (
@@ -102,8 +102,8 @@ function SignIn() {
           </div>
         </div>
 
-        <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? "Entrando..." : "Entrar"}
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? "Entrando..." : "Entrar"}
         </Button>
       </form>
 

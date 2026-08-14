@@ -171,11 +171,12 @@ const user: User = {
   id: "1",
   name: "Conta teste",
   email: "conta@teste.com",
+  createdAt: "2025-11-01T00:00:00.000Z",
+  updatedAt: "2025-11-01T00:00:00.000Z",
 };
 
 const db = {
   user,
-  credentials: { password: "12345678" },
   categories,
   transactions,
 };

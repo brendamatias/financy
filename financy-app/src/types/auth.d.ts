@@ -2,20 +2,31 @@ interface User {
   id: string;
   name: string;
   email: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-interface SignInRequest {
+interface LoginRequest {
   email: string;
   password: string;
 }
 
-interface SignUpRequest {
+interface RegisterRequest {
   name: string;
   email: string;
   password: string;
 }
 
-interface AuthResponse {
+interface AuthPayload {
   token: string;
+  refreshToken: string;
   user: User;
+}
+
+interface LoginResponse {
+  login: AuthPayload;
+}
+
+interface RegisterResponse {
+  register: AuthPayload;
 }

@@ -7,7 +7,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { FieldSeparator } from "@/components/ui/field";
 import { InputField } from "@/components/ui/input-field";
-import { useSignUp } from "@/services";
+import { useAuthStore } from "@/stores/auth";
 
 const schema = z.object({
   name: z.string().min(1, "Informe seu nome completo"),
@@ -22,7 +22,8 @@ type SignUpFormData = z.infer<typeof schema>;
 
 function SignUp() {
   const navigate = useNavigate();
-  const { mutate: signUp, isPending } = useSignUp();
+  const signUp = useAuthStore((state) => state.signUp);
+  const isLoading = useAuthStore((state) => state.isLoading);
 
   const {
     register,
@@ -37,10 +38,12 @@ function SignUp() {
     },
   });
 
-  function onSubmit(data: SignUpFormData) {
-    signUp(data, {
-      onSuccess: () => navigate("/dashboard"),
-    });
+  async function onSubmit(values: SignUpFormData) {
+    const success = await signUp(values);
+
+    if (success) {
+      navigate("/dashboard");
+    }
   }
 
   return (
@@ -90,8 +93,8 @@ function SignUp() {
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? "Cadastrando..." : "Cadastrar"}
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? "Cadastrando..." : "Cadastrar"}
         </Button>
       </form>
 
