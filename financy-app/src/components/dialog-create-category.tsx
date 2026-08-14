@@ -1,50 +1,23 @@
 import * as React from "react";
-import {
-  BookOpen,
-  BriefcaseBusiness,
-  Bubbles,
-  CarFront,
-  CreditCard,
-  Dumbbell,
-  Gift,
-  HeartPulse,
-  House,
-  PiggyBank,
-  ReceiptText,
-  ShoppingBag,
-  ShoppingBasket,
-  ShoppingCart,
-  Ticket,
-  Utensils,
-  type LucideIcon,
-} from "lucide-react";
 
-import { type CategoryColor } from "@/components/category-icon";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { FieldLabel } from "@/components/ui/field";
 import { IconButton } from "@/components/ui/icon-button";
 import { InputField } from "@/components/ui/input-field";
+import { categoryIcons } from "@/lib/category-icons";
 import { cn } from "@/lib/utils";
+import { useCreateCategory } from "@/services";
 
-const icons: { name: string; icon: LucideIcon }[] = [
-  { name: "Trabalho", icon: BriefcaseBusiness },
-  { name: "Transporte", icon: CarFront },
-  { name: "Saúde", icon: HeartPulse },
-  { name: "Investimento", icon: PiggyBank },
-  { name: "Mercado", icon: ShoppingCart },
-  { name: "Entretenimento", icon: Ticket },
-  { name: "Compras", icon: ShoppingBasket },
-  { name: "Alimentação", icon: Utensils },
-  { name: "Limpeza", icon: Bubbles },
-  { name: "Casa", icon: House },
-  { name: "Presentes", icon: Gift },
-  { name: "Academia", icon: Dumbbell },
-  { name: "Educação", icon: BookOpen },
-  { name: "Viagem", icon: ShoppingBag },
-  { name: "Cartão", icon: CreditCard },
-  { name: "Contas", icon: ReceiptText },
-];
+const icons = Object.entries(categoryIcons) as [
+  CategoryIconName,
+  (typeof categoryIcons)[CategoryIconName],
+][];
 
 const colors: { name: CategoryColor; className: string }[] = [
   { name: "green", className: "bg-green-base" },
@@ -57,13 +30,35 @@ const colors: { name: CategoryColor; className: string }[] = [
 ];
 
 function DialogCreateCategory({ children }: { children: React.ReactNode }) {
-  const [selectedIcon, setSelectedIcon] = React.useState(icons[0].name);
+  const [selectedIcon, setSelectedIcon] =
+    React.useState<CategoryIconName>("briefcase");
   const [selectedColor, setSelectedColor] = React.useState<CategoryColor>(
     colors[0].name,
   );
 
+  const { mutate: createCategory, isPending } = useCreateCategory();
+  const closeRef = React.useRef<HTMLButtonElement>(null);
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    const form = event.currentTarget;
+    const data = new FormData(form);
+
+    createCategory(
+      {
+        name: String(data.get("name") ?? ""),
+        description: String(data.get("description") ?? ""),
+        color: selectedColor,
+        icon: selectedIcon,
+      },
+      {
+        onSuccess: () => {
+          form.reset();
+          closeRef.current?.click();
+        },
+      },
+    );
   }
 
   return (
@@ -77,7 +72,7 @@ function DialogCreateCategory({ children }: { children: React.ReactNode }) {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <InputField
             label="Título"
-            name="title"
+            name="name"
             placeholder="Ex. Alimentação"
           />
 
@@ -92,21 +87,20 @@ function DialogCreateCategory({ children }: { children: React.ReactNode }) {
             <FieldLabel>Ícone</FieldLabel>
 
             <div className="grid grid-cols-8 justify-items-center gap-2">
-              {icons.map((item) => (
+              {icons.map(([name, Icon]) => (
                 <IconButton
-                  key={item.name}
+                  key={name}
                   type="button"
                   size="md"
-                  onClick={() => setSelectedIcon(item.name)}
-                  aria-label={item.name}
-                  aria-pressed={selectedIcon === item.name}
+                  onClick={() => setSelectedIcon(name)}
+                  aria-label={name}
+                  aria-pressed={selectedIcon === name}
                   className={cn(
                     "text-gray-500",
-                    selectedIcon === item.name &&
-                      "border-brand-base text-gray-600",
+                    selectedIcon === name && "border-brand-base text-gray-600",
                   )}
                 >
-                  <item.icon />
+                  <Icon />
                 </IconButton>
               ))}
             </div>
@@ -136,9 +130,11 @@ function DialogCreateCategory({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          <Button type="submit" className="w-full mt-2">
-            Salvar
+          <Button type="submit" className="w-full mt-2" disabled={isPending}>
+            {isPending ? "Salvando..." : "Salvar"}
           </Button>
+
+          <DialogClose ref={closeRef} className="hidden" />
         </form>
       </DialogContent>
     </Dialog>

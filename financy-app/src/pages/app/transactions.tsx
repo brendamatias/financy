@@ -15,7 +15,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { CategoryIcon, type CategoryColor } from "@/components/category-icon";
+import { CategoryIcon } from "@/components/category-icon";
 import { DialogCreateTransaction } from "@/components/dialog-create-transaction";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

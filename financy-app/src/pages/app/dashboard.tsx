@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 
-import { CategoryIcon, type CategoryColor } from "@/components/category-icon";
+import { CategoryIcon } from "@/components/category-icon";
 import { TitleSection } from "@/components/title-section";
 import { DialogCreateTransaction } from "@/components/dialog-create-transaction";
 import { Card } from "@/components/ui/card";
