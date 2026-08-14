@@ -1,18 +1,11 @@
+import * as React from "react";
 import {
-  BriefcaseBusiness,
-  CarFront,
   ChevronLeft,
   ChevronRight,
-  PiggyBank,
   Plus,
   Search,
-  ShoppingCart,
   SquarePen,
-  Ticket,
   Trash,
-  Utensils,
-  Zap,
-  type LucideIcon,
 } from "lucide-react";
 
 import { CategoryIcon } from "@/components/category-icon";
@@ -33,115 +26,66 @@ import {
 } from "@/components/ui/table";
 import { Tag } from "@/components/ui/tag";
 import { TransactionType } from "@/components/ui/transaction-type";
+import { getCategoryIcon } from "@/lib/category-icons";
+import { formatDate, formatSignedCurrency } from "@/lib/format";
+import {
+  useCategories,
+  useDeleteTransaction,
+  useTransactionPeriods,
+  useTransactions,
+} from "@/services";
 
-const types = ["Todos", "Entrada", "Saída"];
+const PAGE_SIZE = 10;
 
-const categoryOptions = [
-  "Todas",
-  "Alimentação",
-  "Transporte",
-  "Mercado",
-  "Entretenimento",
-  "Utilidades",
-  "Salário",
-  "Investimento",
-];
-
-const periods = ["Novembro / 2025", "Outubro / 2025", "Setembro / 2025"];
-
-const transactions: {
-  id: number;
-  description: string;
-  date: string;
-  category: string;
-  color: CategoryColor;
-  icon: LucideIcon;
-  type: "income" | "expense";
-  amount: string;
-}[] = [
-  {
-    id: 1,
-    description: "Jantar no Restaurante",
-    date: "30/11/25",
-    category: "Alimentação",
-    color: "blue",
-    icon: Utensils,
-    type: "expense",
-    amount: "- R$ 89,50",
-  },
-  {
-    id: 2,
-    description: "Posto de Gasolina",
-    date: "29/11/25",
-    category: "Transporte",
-    color: "purple",
-    icon: CarFront,
-    type: "expense",
-    amount: "- R$ 100,00",
-  },
-  {
-    id: 3,
-    description: "Compras no Mercado",
-    date: "28/11/25",
-    category: "Mercado",
-    color: "orange",
-    icon: ShoppingCart,
-    type: "expense",
-    amount: "- R$ 156,80",
-  },
-  {
-    id: 4,
-    description: "Retorno de Investimento",
-    date: "26/11/25",
-    category: "Investimento",
-    color: "green",
-    icon: PiggyBank,
-    type: "income",
-    amount: "+ R$ 340,25",
-  },
-  {
-    id: 5,
-    description: "Aluguel",
-    date: "26/11/25",
-    category: "Utilidades",
-    color: "yellow",
-    icon: Zap,
-    type: "expense",
-    amount: "- R$ 1.700,00",
-  },
-  {
-    id: 6,
-    description: "Freelance",
-    date: "24/11/25",
-    category: "Salário",
-    color: "green",
-    icon: BriefcaseBusiness,
-    type: "income",
-    amount: "+ R$ 2.500,00",
-  },
-  {
-    id: 7,
-    description: "Compras Jantar",
-    date: "22/11/25",
-    category: "Mercado",
-    color: "orange",
-    icon: ShoppingCart,
-    type: "expense",
-    amount: "- R$ 150,00",
-  },
-  {
-    id: 8,
-    description: "Cinema",
-    date: "18/12/25",
-    category: "Entretenimento",
-    color: "pink",
-    icon: Ticket,
-    type: "expense",
-    amount: "- R$ 88,00",
-  },
+const typeOptions = [
+  { value: "all", label: "Todos" },
+  { value: "income", label: "Entrada" },
+  { value: "expense", label: "Saída" },
 ];
 
 function Transactions() {
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [type, setType] = React.useState<TransactionFilters["type"]>("all");
+  const [categoryId, setCategoryId] = React.useState("all");
+  const [period, setPeriod] = React.useState("");
+  const [page, setPage] = React.useState(1);
+
+  const { data: categories } = useCategories();
+  const { data: periods } = useTransactionPeriods();
+  const { data, isLoading } = useTransactions({
+    page,
+    pageSize: PAGE_SIZE,
+    searchQuery,
+    type,
+    categoryId,
+    period,
+  });
+  const { mutate: deleteTransaction, isPending } = useDeleteTransaction();
+
+  const transactions = data?.data ?? [];
+  const total = data?.meta.total ?? 0;
+  const totalPages = data?.meta.totalPages ?? 1;
+  const firstItem = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const lastItem = Math.min(page * PAGE_SIZE, total);
+
+  const categoryOptions = [
+    { value: "all", label: "Todas" },
+    ...(categories ?? []).map((category) => ({
+      value: category.id,
+      label: category.name,
+    })),
+  ];
+
+  const periodOptions = [
+    { value: "", label: "Todos os períodos" },
+    ...(periods ?? []).map((item) => ({ value: item, label: item })),
+  ];
+
+  function updateFilter(update: () => void) {
+    update();
+    setPage(1);
+  }
+
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -160,33 +104,40 @@ function Transactions() {
         </DialogCreateTransaction>
       </div>
 
-      <Card className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 py-5">
+      <Card className="grid gap-4 py-5 sm:grid-cols-2 md:grid-cols-4">
         <InputField
           label="Buscar"
           name="search"
           placeholder="Buscar por descrição"
           icon={<Search />}
+          value={searchQuery}
+          onChange={(event) =>
+            updateFilter(() => setSearchQuery(event.target.value))
+          }
         />
 
         <SelectField
           label="Tipo"
-          name="type"
-          items={types}
-          defaultValue={types[0]}
+          items={typeOptions}
+          value={type}
+          onValueChange={(value) =>
+            updateFilter(() => setType(value as TransactionFilters["type"]))
+          }
         />
 
         <SelectField
           label="Categoria"
-          name="category"
           items={categoryOptions}
-          defaultValue={categoryOptions[0]}
+          value={categoryId}
+          onValueChange={(value) => updateFilter(() => setCategoryId(value))}
         />
 
         <SelectField
           label="Período"
-          name="period"
-          items={periods}
-          defaultValue={periods[0]}
+          placeholder="Todos os períodos"
+          items={periodOptions}
+          value={period}
+          onValueChange={(value) => updateFilter(() => setPeriod(value))}
         />
       </Card>
 
@@ -204,78 +155,114 @@ function Transactions() {
           </TableHeader>
 
           <TableBody>
-            {transactions.map((transaction) => (
-              <TableRow key={transaction.id}>
-                <TableCell>
-                  <div className="flex items-center font-medium gap-4">
-                    <CategoryIcon
-                      icon={transaction.icon}
-                      color={transaction.color}
-                    />
-                    {transaction.description}
-                  </div>
-                </TableCell>
-
-                <TableCell className="text-center text-sm text-gray-600">
-                  {transaction.date}
-                </TableCell>
-
-                <TableCell>
-                  <div className="flex justify-center">
-                    <Tag variant={transaction.color}>
-                      {transaction.category}
-                    </Tag>
-                  </div>
-                </TableCell>
-
-                <TableCell>
-                  <div className="flex justify-center">
-                    <TransactionType variant={transaction.type} />
-                  </div>
-                </TableCell>
-
-                <TableCell className="text-right font-semibold text-sm">
-                  {transaction.amount}
-                </TableCell>
-
-                <TableCell>
-                  <div className="flex justify-end gap-2">
-                    <IconButton
-                      variant="danger"
-                      aria-label={`Excluir ${transaction.description}`}
-                    >
-                      <Trash />
-                    </IconButton>
-
-                    <IconButton
-                      aria-label={`Editar ${transaction.description}`}
-                    >
-                      <SquarePen />
-                    </IconButton>
-                  </div>
+            {isLoading ? (
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={6} className="text-center text-gray-600">
+                  Carregando transações...
                 </TableCell>
               </TableRow>
-            ))}
+            ) : transactions.length === 0 ? (
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={6} className="text-center text-gray-600">
+                  Nenhuma transação encontrada.
+                </TableCell>
+              </TableRow>
+            ) : (
+              transactions.map((transaction) => (
+                <TableRow key={transaction.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-4 font-medium">
+                      <CategoryIcon
+                        icon={getCategoryIcon(transaction.category.icon)}
+                        color={transaction.category.color}
+                      />
+                      {transaction.description}
+                    </div>
+                  </TableCell>
+
+                  <TableCell className="text-center text-sm text-gray-600">
+                    {formatDate(transaction.date)}
+                  </TableCell>
+
+                  <TableCell>
+                    <div className="flex justify-center">
+                      <Tag variant={transaction.category.color}>
+                        {transaction.category.name}
+                      </Tag>
+                    </div>
+                  </TableCell>
+
+                  <TableCell>
+                    <div className="flex justify-center">
+                      <TransactionType variant={transaction.type} />
+                    </div>
+                  </TableCell>
+
+                  <TableCell className="text-right text-sm font-semibold">
+                    {formatSignedCurrency(
+                      transaction.type === "expense"
+                        ? -transaction.amount
+                        : transaction.amount,
+                    )}
+                  </TableCell>
+
+                  <TableCell>
+                    <div className="flex justify-end gap-2">
+                      <IconButton
+                        variant="danger"
+                        disabled={isPending}
+                        onClick={() => deleteTransaction(transaction.id)}
+                        aria-label={`Excluir ${transaction.description}`}
+                      >
+                        <Trash />
+                      </IconButton>
+
+                      <IconButton
+                        aria-label={`Editar ${transaction.description}`}
+                      >
+                        <SquarePen />
+                      </IconButton>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
 
         <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-5">
           <span className="text-sm text-gray-700">
-            <strong className="font-medium">1</strong> a{" "}
-            <strong className="font-medium">10</strong> |{" "}
-            <strong className="font-medium">27</strong> resultados
+            <strong className="font-medium">{firstItem}</strong> a{" "}
+            <strong className="font-medium">{lastItem}</strong> |{" "}
+            <strong className="font-medium">{total}</strong> resultados
           </span>
 
           <div className="flex items-center gap-2">
-            <PaginationButton aria-label="Página anterior" disabled>
+            <PaginationButton
+              aria-label="Página anterior"
+              disabled={page === 1}
+              onClick={() => setPage((current) => current - 1)}
+            >
               <ChevronLeft />
             </PaginationButton>
 
-            <PaginationButton isActive>1</PaginationButton>
-            <PaginationButton>2</PaginationButton>
-            <PaginationButton>3</PaginationButton>
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+              (item) => (
+                <PaginationButton
+                  key={item}
+                  isActive={item === page}
+                  onClick={() => setPage(item)}
+                >
+                  {item}
+                </PaginationButton>
+              ),
+            )}
 
-            <PaginationButton aria-label="Próxima página">
+            <PaginationButton
+              aria-label="Próxima página"
+              disabled={page === totalPages}
+              onClick={() => setPage((current) => current + 1)}
+            >
               <ChevronRight />
             </PaginationButton>
           </div>

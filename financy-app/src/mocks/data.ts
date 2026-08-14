@@ -65,8 +65,119 @@ const categories: Category[] = [
   },
 ];
 
+function categoryRef(id: string) {
+  const category = categories.find((item) => item.id === id) ?? categories[0];
+
+  return {
+    id: category.id,
+    name: category.name,
+    color: category.color,
+    icon: category.icon,
+  };
+}
+
+const transactions: Transaction[] = [
+  {
+    id: "1",
+    description: "Pagamento de Salário",
+    date: "2025-12-01",
+    amount: 4250,
+    type: "income",
+    category: categoryRef("5"),
+  },
+  {
+    id: "2",
+    description: "Jantar no Restaurante",
+    date: "2025-11-30",
+    amount: 89.5,
+    type: "expense",
+    category: categoryRef("1"),
+  },
+  {
+    id: "3",
+    description: "Posto de Gasolina",
+    date: "2025-11-29",
+    amount: 100,
+    type: "expense",
+    category: categoryRef("7"),
+  },
+  {
+    id: "4",
+    description: "Compras no Mercado",
+    date: "2025-11-28",
+    amount: 156.8,
+    type: "expense",
+    category: categoryRef("4"),
+  },
+  {
+    id: "5",
+    description: "Retorno de Investimento",
+    date: "2025-11-26",
+    amount: 340.25,
+    type: "income",
+    category: categoryRef("3"),
+  },
+  {
+    id: "6",
+    description: "Aluguel",
+    date: "2025-11-26",
+    amount: 1700,
+    type: "expense",
+    category: categoryRef("8"),
+  },
+  {
+    id: "7",
+    description: "Freelance",
+    date: "2025-11-24",
+    amount: 2500,
+    type: "income",
+    category: categoryRef("5"),
+  },
+  {
+    id: "8",
+    description: "Compras Jantar",
+    date: "2025-11-22",
+    amount: 150,
+    type: "expense",
+    category: categoryRef("4"),
+  },
+  {
+    id: "9",
+    description: "Cinema",
+    date: "2025-11-18",
+    amount: 88,
+    type: "expense",
+    category: categoryRef("2"),
+  },
+  {
+    id: "10",
+    description: "Farmácia",
+    date: "2025-11-15",
+    amount: 74.9,
+    type: "expense",
+    category: categoryRef("6"),
+  },
+  {
+    id: "11",
+    description: "Uber para o trabalho",
+    date: "2025-11-12",
+    amount: 32.4,
+    type: "expense",
+    category: categoryRef("7"),
+  },
+  {
+    id: "12",
+    description: "Internet",
+    date: "2025-11-10",
+    amount: 129.9,
+    type: "expense",
+    category: categoryRef("8"),
+  },
+];
+
 const db = {
   categories,
+  transactions,
 };
 
-export { db };
+export { categoryRef, db };
