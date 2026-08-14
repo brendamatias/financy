@@ -96,6 +96,8 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
           });
 
+          toast.success("Conta criada com sucesso.");
+
           return true;
         } catch (error) {
           toast.error(
