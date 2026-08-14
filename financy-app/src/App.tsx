@@ -1,5 +1,7 @@
-import { Mail, Trash2, UserPlus } from "lucide-react";
+import { Mail, Tag as TagIcon, Trash2, UserPlus } from "lucide-react";
 
+import { CategoryCard, CategoryCardSkeleton } from "@/components/category-card";
+import { SummaryCard, SummaryCardSkeleton } from "@/components/summary-card";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { InputField } from "@/components/ui/input-field";
@@ -23,9 +25,33 @@ const tagVariantList = [
   "green",
 ] as const;
 
+const exampleCategory: Category = {
+  id: "example",
+  name: "Alimentação",
+  description: "Restaurantes, delivery e refeições",
+  color: "blue",
+  icon: "food",
+  transactionsCount: 12,
+};
+
 function App() {
   return (
     <main className="flex flex-col gap-10 text-left">
+      <h1 className="text-3xl font-medium">Skeleton</h1>
+
+      <section className="grid max-w-2xl gap-4 sm:grid-cols-2">
+        <CategoryCard category={exampleCategory} />
+        <CategoryCardSkeleton />
+
+        <SummaryCard
+          label="Total de categorias"
+          value="8"
+          icon={TagIcon}
+          iconClassName="text-gray-700"
+        />
+        <SummaryCardSkeleton />
+      </section>
+
       <h1 className="text-3xl font-medium">Button</h1>
 
       {sizes.map((size) => (
