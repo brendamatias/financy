@@ -1,5 +1,8 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock, Mail, UserPlus } from "lucide-react";
+import { Controller, useForm } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -7,9 +10,34 @@ import { FieldSeparator } from "@/components/ui/field";
 import { InputField } from "@/components/ui/input-field";
 import { Link } from "@/components/ui/link";
 
+const schema = z.object({
+  email: z
+    .string()
+    .min(1, "Informe o e-mail")
+    .pipe(z.email("Informe um e-mail válido")),
+  password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
+  remember: z.boolean(),
+});
+
+type SignInFormData = z.infer<typeof schema>;
+
 function SignIn() {
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignInFormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      email: "",
+      password: "",
+      remember: false,
+    },
+  });
+
+  function onSubmit(data: SignInFormData) {
+    console.log(data);
   }
 
   return (
@@ -21,33 +49,51 @@ function SignIn() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-6"
+        noValidate
+      >
         <div className="flex flex-col gap-4">
           <InputField
             label="E-mail"
             type="email"
-            name="email"
             autoComplete="email"
             placeholder="mail@exemplo.com"
             icon={<Mail />}
+            error={errors.email?.message}
+            {...register("email")}
           />
 
           <InputField
             label="Senha"
             type="password"
-            name="password"
             autoComplete="current-password"
             placeholder="Digite sua senha"
             icon={<Lock />}
+            error={errors.password?.message}
+            {...register("password")}
           />
 
           <div className="flex items-center justify-between gap-4">
-            <Checkbox id="remember" name="remember" label="Lembrar-me" />
+            <Controller
+              control={control}
+              name="remember"
+              render={({ field }) => (
+                <Checkbox
+                  id="remember"
+                  label="Lembrar-me"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              )}
+            />
+
             <Link href="/recuperar-senha">Recuperar senha</Link>
           </div>
         </div>
 
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
           Entrar
         </Button>
       </form>

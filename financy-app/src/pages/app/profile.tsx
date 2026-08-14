@@ -1,4 +1,7 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { LogOut, Mail, UserRound } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -12,9 +15,26 @@ const user = {
   initials: "CT",
 };
 
+const schema = z.object({
+  name: z.string().min(1, "Informe seu nome completo"),
+});
+
+type ProfileFormData = z.infer<typeof schema>;
+
 function Profile() {
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<ProfileFormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      name: user.name,
+    },
+  });
+
+  function onSubmit(data: ProfileFormData) {
+    console.log(data);
   }
 
   return (
@@ -34,18 +54,21 @@ function Profile() {
 
       <Separator />
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-4"
+        noValidate
+      >
         <InputField
           label="Nome completo"
-          name="name"
           autoComplete="name"
-          defaultValue={user.name}
           icon={<UserRound />}
+          error={errors.name?.message}
+          {...register("name")}
         />
 
         <InputField
           label="E-mail"
-          name="email"
           type="email"
           defaultValue={user.email}
           helperText="O e-mail não pode ser alterado"
@@ -53,7 +76,7 @@ function Profile() {
           disabled
         />
 
-        <Button type="submit" className="mt-4 w-full">
+        <Button type="submit" className="mt-4 w-full" disabled={isSubmitting}>
           Salvar alterações
         </Button>
 

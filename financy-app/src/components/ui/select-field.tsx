@@ -17,7 +17,7 @@ function SelectField({
   id,
   label,
   helperText,
-  error = false,
+  error,
   placeholder = "Selecione",
   items,
   disabled,
@@ -27,13 +27,14 @@ function SelectField({
   id?: string;
   label?: React.ReactNode;
   helperText?: React.ReactNode;
-  error?: boolean;
+  error?: string;
   placeholder?: string;
   items: SelectFieldItem[];
 }) {
   const generatedId = React.useId();
   const selectId = id ?? generatedId;
   const helperId = `${selectId}-helper`;
+  const description = error ?? helperText;
 
   const options = items.map((item) =>
     typeof item === "string" ? { value: item, label: item } : item,
@@ -41,7 +42,7 @@ function SelectField({
 
   return (
     <Field
-      data-invalid={error || undefined}
+      data-invalid={error ? true : undefined}
       className="group gap-1 text-gray-400"
     >
       {label ? (
@@ -56,8 +57,8 @@ function SelectField({
       <Select disabled={disabled} {...props}>
         <SelectTrigger
           id={selectId}
-          aria-invalid={error || undefined}
-          aria-describedby={helperText ? helperId : undefined}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={description ? helperId : undefined}
           className={cn(className)}
         >
           <SelectValue placeholder={placeholder} />
@@ -72,8 +73,10 @@ function SelectField({
         </SelectContent>
       </Select>
 
-      {helperText ? (
-        <FieldDescription id={helperId}>{helperText}</FieldDescription>
+      {description ? (
+        <FieldDescription id={helperId} className={cn(error && "text-danger")}>
+          {description}
+        </FieldDescription>
       ) : null}
     </Field>
   );

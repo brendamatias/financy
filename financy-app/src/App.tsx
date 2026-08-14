@@ -104,11 +104,10 @@ function App() {
 
         <InputField
           label="Label"
-          helperText="Helper"
           placeholder="Placeholder"
           defaultValue="Text"
           icon={<Mail />}
-          error
+          error="Mensagem de erro"
         />
 
         <InputField

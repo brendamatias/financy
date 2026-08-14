@@ -1,13 +1,11 @@
 import * as React from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleArrowDown, CircleArrowUp } from "lucide-react";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { InputField } from "@/components/ui/input-field";
 import { SelectField } from "@/components/ui/select-field";
 import { useCategories, useCreateTransaction } from "@/services";
@@ -27,6 +25,24 @@ const types = [
   },
 ] as const;
 
+const schema = z.object({
+  type: z.custom<TransactionType>(),
+  description: z.string().min(1, "Informe a descrição"),
+  date: z.string().min(1, "Informe a data"),
+  amount: z.string().min(1, "Informe o valor"),
+  categoryId: z.string().min(1, "Selecione uma categoria"),
+});
+
+type TransactionFormData = z.infer<typeof schema>;
+
+const defaultValues: TransactionFormData = {
+  type: "expense",
+  description: "",
+  date: "",
+  amount: "",
+  categoryId: "",
+};
+
 function formatCurrency(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 12);
 
@@ -40,103 +56,136 @@ function formatCurrency(value: string) {
   });
 }
 
-function DialogCreateTransaction({ children }: { children: React.ReactNode }) {
-  const [selectedType, setSelectedType] =
-    React.useState<(typeof types)[number]["value"]>("expense");
-  const [amount, setAmount] = React.useState("");
+function parseCurrency(value: string) {
+  return Number(value.replace(/\./g, "").replace(",", "."));
+}
 
+function DialogCreateTransaction({ children }: { children: React.ReactNode }) {
   const { data: categories } = useCategories();
   const { mutate: createTransaction, isPending } = useCreateTransaction();
-  const closeRef = React.useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = React.useState(false);
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<TransactionFormData>({
+    resolver: zodResolver(schema),
+    defaultValues,
+  });
 
   const categoryOptions = (categories ?? []).map((category) => ({
     value: category.id,
     label: category.name,
   }));
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const form = event.currentTarget;
-    const data = new FormData(form);
-
+  function onSubmit(data: TransactionFormData) {
     createTransaction(
       {
-        description: String(data.get("description") ?? ""),
-        date: String(data.get("date") ?? ""),
-        amount: Number(amount.replace(/\./g, "").replace(",", ".")),
-        type: selectedType,
-        categoryId: String(data.get("category") ?? ""),
+        description: data.description,
+        date: data.date,
+        amount: parseCurrency(data.amount),
+        type: data.type,
+        categoryId: data.categoryId,
       },
       {
         onSuccess: () => {
-          form.reset();
-          setAmount("");
-          setSelectedType("expense");
-          closeRef.current?.click();
+          reset(defaultValues);
+          setOpen(false);
         },
       },
     );
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
       <DialogContent
         title="Nova transação"
         description="Registre sua despesa ou receita"
       >
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-2 rounded-lg border border-gray-200 p-2">
-            {types.map((type) => (
-              <Button
-                key={type.value}
-                type="button"
-                variant={selectedType === type.value ? type.variant : "ghost"}
-                onClick={() => setSelectedType(type.value)}
-                aria-pressed={selectedType === type.value}
-              >
-                <type.icon />
-                {type.label}
-              </Button>
-            ))}
-          </div>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col gap-4"
+          noValidate
+        >
+          <Controller
+            control={control}
+            name="type"
+            render={({ field }) => (
+              <div className="grid grid-cols-2 gap-2 rounded-lg border border-gray-200 p-2">
+                {types.map((type) => (
+                  <Button
+                    key={type.value}
+                    type="button"
+                    variant={field.value === type.value ? type.variant : "ghost"}
+                    onClick={() => field.onChange(type.value)}
+                    aria-pressed={field.value === type.value}
+                  >
+                    <type.icon />
+                    {type.label}
+                  </Button>
+                ))}
+              </div>
+            )}
+          />
 
           <InputField
             label="Descrição"
-            name="description"
             placeholder="Ex. Almoço no restaurante"
+            error={errors.description?.message}
+            {...register("description")}
           />
 
           <div className="grid grid-cols-2 gap-4">
             <InputField
               label="Data"
-              name="date"
               type="date"
               placeholder="Selecione"
+              error={errors.date?.message}
+              {...register("date")}
             />
 
-            <InputField
-              label="Valor"
+            <Controller
+              control={control}
               name="amount"
-              inputMode="numeric"
-              placeholder="0,00"
-              value={amount}
-              onChange={(event) =>
-                setAmount(formatCurrency(event.target.value))
-              }
-              icon={<span className="text-base text-black">R$</span>}
+              render={({ field }) => (
+                <InputField
+                  label="Valor"
+                  inputMode="numeric"
+                  placeholder="0,00"
+                  icon={<span className="text-base text-black">R$</span>}
+                  error={errors.amount?.message}
+                  value={field.value}
+                  onChange={(event) =>
+                    field.onChange(formatCurrency(event.target.value))
+                  }
+                  onBlur={field.onBlur}
+                />
+              )}
             />
           </div>
 
-          <SelectField label="Categoria" name="category" items={categoryOptions} />
+          <Controller
+            control={control}
+            name="categoryId"
+            render={({ field }) => (
+              <SelectField
+                label="Categoria"
+                items={categoryOptions}
+                value={field.value}
+                onValueChange={field.onChange}
+                error={errors.categoryId?.message}
+              />
+            )}
+          />
 
           <Button type="submit" className="mt-2 w-full" disabled={isPending}>
             {isPending ? "Salvando..." : "Salvar"}
           </Button>
-
-          <DialogClose ref={closeRef} className="hidden" />
         </form>
       </DialogContent>
     </Dialog>

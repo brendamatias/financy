@@ -11,7 +11,7 @@ function InputField({
   type = "text",
   label,
   helperText,
-  error = false,
+  error,
   icon,
   trailing,
   disabled,
@@ -19,13 +19,14 @@ function InputField({
 }: React.ComponentProps<typeof Input> & {
   label?: React.ReactNode;
   helperText?: React.ReactNode;
-  error?: boolean;
+  error?: string;
   icon?: React.ReactNode;
   trailing?: React.ReactNode;
 }) {
   const generatedId = React.useId();
   const inputId = id ?? generatedId;
   const helperId = `${inputId}-helper`;
+  const description = error ?? helperText;
 
   const [showPassword, setShowPassword] = React.useState(false);
   const isPassword = type === "password";
@@ -46,7 +47,7 @@ function InputField({
 
   return (
     <Field
-      data-invalid={error || undefined}
+      data-invalid={error ? true : undefined}
       className="group gap-1 text-gray-400 has-[input:not(:placeholder-shown)]:text-gray-700"
     >
       {label ? (
@@ -72,8 +73,8 @@ function InputField({
           id={inputId}
           type={isPassword && showPassword ? "text" : type}
           disabled={disabled}
-          aria-invalid={error || undefined}
-          aria-describedby={helperText ? helperId : undefined}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={description ? helperId : undefined}
           className={cn(icon && "pl-11", trailingContent && "pr-11", className)}
           {...props}
         />
@@ -85,8 +86,13 @@ function InputField({
         ) : null}
       </div>
 
-      {helperText ? (
-        <FieldDescription id={helperId}>{helperText}</FieldDescription>
+      {description ? (
+        <FieldDescription
+          id={helperId}
+          className={cn(error && "text-danger")}
+        >
+          {description}
+        </FieldDescription>
       ) : null}
     </Field>
   );

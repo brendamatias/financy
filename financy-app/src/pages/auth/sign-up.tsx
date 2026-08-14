@@ -1,13 +1,40 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { LogIn, Lock, Mail, UserRound } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { FieldSeparator } from "@/components/ui/field";
 import { InputField } from "@/components/ui/input-field";
 
+const schema = z.object({
+  name: z.string().min(1, "Informe seu nome completo"),
+  email: z
+    .string()
+    .min(1, "Informe o e-mail")
+    .pipe(z.email("Informe um e-mail válido")),
+  password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
+});
+
+type SignUpFormData = z.infer<typeof schema>;
+
 function SignUp() {
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignUpFormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+    },
+  });
+
+  function onSubmit(data: SignUpFormData) {
+    console.log(data);
   }
 
   return (
@@ -19,38 +46,45 @@ function SignUp() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-6"
+        noValidate
+      >
         <div className="flex flex-col gap-4">
           <InputField
             label="Nome completo"
             type="text"
-            name="name"
             autoComplete="name"
             placeholder="Seu nome completo"
             icon={<UserRound />}
+            error={errors.name?.message}
+            {...register("name")}
           />
 
           <InputField
             label="E-mail"
             type="email"
-            name="email"
             autoComplete="email"
             placeholder="mail@exemplo.com"
             icon={<Mail />}
+            error={errors.email?.message}
+            {...register("email")}
           />
 
           <InputField
             label="Senha"
             type="password"
-            name="password"
             autoComplete="new-password"
             placeholder="Digite sua senha"
-            helperText="A senha deve ter no mínimo 8 caracteres"
             icon={<Lock />}
+            error={errors.password?.message}
+            helperText="A senha deve ter no mínimo 8 caracteres"
+            {...register("password")}
           />
         </div>
 
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
           Cadastrar
         </Button>
       </form>
