@@ -1,0 +1,12 @@
+node_modules
+src/generated
+dist
+
+# Banco local
+*.db
+*.db-journal
+
+# Variáveis de ambiente
+.env
+.env.*
+!.env.example
