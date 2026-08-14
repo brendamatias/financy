@@ -7,7 +7,7 @@ import { afterAll, beforeAll, beforeEach } from "vitest";
 
 config({ path: ".env.test", override: true });
 
-const databaseFile = resolve(process.cwd(), "prisma/test.db");
+const databaseFile = resolve(process.cwd(), "test.db");
 
 function removeDatabase() {
   rmSync(databaseFile, { force: true });
@@ -26,6 +26,7 @@ beforeAll(() => {
 beforeEach(async () => {
   const { prismaClient } = await import("../../prisma/prisma");
 
+  await prismaClient.category.deleteMany();
   await prismaClient.user.deleteMany();
 });
 
