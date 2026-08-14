@@ -1,7 +1,9 @@
 import { NavLink, Outlet } from "react-router-dom";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { getInitials } from "@/lib/initials";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/auth";
 
 import logo from "@/assets/logo.svg";
 
@@ -12,6 +14,8 @@ const navigation = [
 ];
 
 function DefaultLayout() {
+  const user = useAuthStore((state) => state.user);
+
   return (
     <div className="flex min-h-svh flex-col">
       <header className="border-b border-gray-200 bg-white">
@@ -39,7 +43,7 @@ function DefaultLayout() {
 
           <NavLink to="/profile" aria-label="Perfil">
             <Avatar>
-              <AvatarFallback>CT</AvatarFallback>
+              <AvatarFallback>{getInitials(user?.name ?? "")}</AvatarFallback>
             </Avatar>
           </NavLink>
         </div>

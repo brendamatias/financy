@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock, Mail, UserPlus } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { FieldSeparator } from "@/components/ui/field";
 import { InputField } from "@/components/ui/input-field";
 import { Link } from "@/components/ui/link";
+import { useSignIn } from "@/services";
 
 const schema = z.object({
   email: z
@@ -22,11 +23,14 @@ const schema = z.object({
 type SignInFormData = z.infer<typeof schema>;
 
 function SignIn() {
+  const navigate = useNavigate();
+  const { mutate: signIn, isPending } = useSignIn();
+
   const {
     register,
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<SignInFormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -36,8 +40,13 @@ function SignIn() {
     },
   });
 
-  function onSubmit(data: SignInFormData) {
-    console.log(data);
+  function onSubmit({ email, password }: SignInFormData) {
+    signIn(
+      { email, password },
+      {
+        onSuccess: () => navigate("/dashboard"),
+      },
+    );
   }
 
   return (
@@ -93,8 +102,8 @@ function SignIn() {
           </div>
         </div>
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          Entrar
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending ? "Entrando..." : "Entrar"}
         </Button>
       </form>
 

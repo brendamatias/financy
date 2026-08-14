@@ -1,12 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LogIn, Lock, Mail, UserRound } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { FieldSeparator } from "@/components/ui/field";
 import { InputField } from "@/components/ui/input-field";
+import { useSignUp } from "@/services";
 
 const schema = z.object({
   name: z.string().min(1, "Informe seu nome completo"),
@@ -20,10 +21,13 @@ const schema = z.object({
 type SignUpFormData = z.infer<typeof schema>;
 
 function SignUp() {
+  const navigate = useNavigate();
+  const { mutate: signUp, isPending } = useSignUp();
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<SignUpFormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -34,7 +38,9 @@ function SignUp() {
   });
 
   function onSubmit(data: SignUpFormData) {
-    console.log(data);
+    signUp(data, {
+      onSuccess: () => navigate("/dashboard"),
+    });
   }
 
   return (
@@ -84,8 +90,8 @@ function SignUp() {
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          Cadastrar
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending ? "Cadastrando..." : "Cadastrar"}
         </Button>
       </form>
 
@@ -95,7 +101,7 @@ function SignUp() {
         <p className="text-base text-gray-600">Já tem uma conta?</p>
 
         <Button variant="outline" className="w-full" asChild>
-          <RouterLink to="/">
+          <RouterLink to="/sign-in">
             <LogIn />
             Fazer login
           </RouterLink>

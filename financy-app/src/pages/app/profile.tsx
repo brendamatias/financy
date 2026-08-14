@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LogOut, Mail, UserRound } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -8,12 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { InputField } from "@/components/ui/input-field";
 import { Separator } from "@/components/ui/separator";
-
-const user = {
-  name: "Conta teste",
-  email: "conta@teste.com",
-  initials: "CT",
-};
+import { getInitials } from "@/lib/initials";
+import { useUpdateUser } from "@/services";
+import { useAuthStore } from "@/stores/auth";
 
 const schema = z.object({
   name: z.string().min(1, "Informe seu nome completo"),
@@ -22,33 +20,43 @@ const schema = z.object({
 type ProfileFormData = z.infer<typeof schema>;
 
 function Profile() {
+  const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const signOut = useAuthStore((state) => state.signOut);
+  const { mutate: updateUser, isPending } = useUpdateUser();
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ProfileFormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: user.name,
+      name: user?.name ?? "",
     },
   });
 
   function onSubmit(data: ProfileFormData) {
-    console.log(data);
+    updateUser(data);
+  }
+
+  function handleSignOut() {
+    signOut();
+    navigate("/sign-in", { replace: true });
   }
 
   return (
     <Card className="mx-auto flex w-full max-w-md flex-col gap-8 p-8">
       <div className="flex flex-col items-center gap-6">
         <Avatar size="xl">
-          <AvatarFallback>{user.initials}</AvatarFallback>
+          <AvatarFallback>{getInitials(user?.name ?? "")}</AvatarFallback>
         </Avatar>
 
         <div className="flex flex-col items-center">
           <strong className="text-xl font-bold text-gray-800">
-            {user.name}
+            {user?.name}
           </strong>
-          <span className="text-base text-gray-500">{user.email}</span>
+          <span className="text-base text-gray-500">{user?.email}</span>
         </div>
       </div>
 
@@ -70,17 +78,22 @@ function Profile() {
         <InputField
           label="E-mail"
           type="email"
-          defaultValue={user.email}
+          defaultValue={user?.email}
           helperText="O e-mail não pode ser alterado"
           icon={<Mail />}
           disabled
         />
 
-        <Button type="submit" className="mt-4 w-full" disabled={isSubmitting}>
-          Salvar alterações
+        <Button type="submit" className="mt-4 w-full" disabled={isPending}>
+          {isPending ? "Salvando..." : "Salvar alterações"}
         </Button>
 
-        <Button type="button" variant="outline" className="w-full">
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={handleSignOut}
+        >
           <LogOut className="text-danger" />
           Sair da conta
         </Button>

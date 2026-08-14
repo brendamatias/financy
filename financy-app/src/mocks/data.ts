@@ -167,7 +167,15 @@ const transactions: Transaction[] = [
   },
 ];
 
+const user: User = {
+  id: "1",
+  name: "Conta teste",
+  email: "conta@teste.com",
+};
+
 const db = {
+  user,
+  credentials: { password: "12345678" },
   categories,
   transactions,
 };
