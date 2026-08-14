@@ -12,6 +12,9 @@ const buttonVariants = cva(
         solid: "bg-brand-base text-white hover:bg-brand-dark",
         outline:
           "border-gray-300 bg-white text-gray-700 hover:bg-gray-200 aria-expanded:bg-gray-200",
+        ghost: "text-gray-600 hover:bg-gray-100 [&_svg]:text-gray-400",
+        danger: "border-danger bg-gray-100 text-gray-800 [&_svg]:text-danger",
+        success: "border-success bg-gray-100 text-gray-800 [&_svg]:text-success",
       },
       size: {
         md: "h-12 gap-2 px-4 py-3 text-base [&_svg:not([class*='size-'])]:size-5",

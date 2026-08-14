@@ -15,6 +15,7 @@ import { Link as RouterLink } from "react-router-dom";
 
 import { CategoryIcon, type CategoryColor } from "@/components/category-icon";
 import { TitleSection } from "@/components/title-section";
+import { DialogCreateTransaction } from "@/components/dialog-create-transaction";
 import { Card } from "@/components/ui/card";
 import { Link } from "@/components/ui/link";
 import { Tag } from "@/components/ui/tag";
@@ -228,10 +229,14 @@ function Dashboard() {
           </ul>
 
           <div className="flex items-center justify-center my-5">
-            <Link>
-              <Plus className="size-5" />
-              Nova transação
-            </Link>
+            <DialogCreateTransaction>
+              <Link asChild>
+                <button type="button">
+                  <Plus className="size-5" />
+                  Nova transação
+                </button>
+              </Link>
+            </DialogCreateTransaction>
           </div>
         </Card>
 
