@@ -10,7 +10,7 @@ const paginationButtonVariants = cva(
     variants: {
       isActive: {
         true: "border-transparent bg-brand-base text-white",
-        false: "border-gray-300 bg-background text-gray-700 hover:bg-gray-200",
+        false: "border-gray-300 bg-white text-gray-700 hover:bg-gray-200",
       },
     },
     defaultVariants: {

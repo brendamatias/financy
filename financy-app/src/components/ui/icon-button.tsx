@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 const iconButtonVariants = cva(
   cn(
     buttonVariants({ variant: null, size: null }),
-    "size-8 border-gray-300 bg-background [&_svg:not([class*='size-'])]:size-4",
+    "size-8 border-gray-300 bg-white [&_svg:not([class*='size-'])]:size-4",
   ),
   {
     variants: {

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Eye, EyeClosed } from "lucide-react";
 
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -7,10 +8,12 @@ import { cn } from "@/lib/utils";
 function InputField({
   className,
   id,
+  type = "text",
   label,
   helperText,
   error = false,
   icon,
+  trailing,
   disabled,
   ...props
 }: React.ComponentProps<typeof Input> & {
@@ -18,10 +21,28 @@ function InputField({
   helperText?: React.ReactNode;
   error?: boolean;
   icon?: React.ReactNode;
+  trailing?: React.ReactNode;
 }) {
   const generatedId = React.useId();
   const inputId = id ?? generatedId;
   const helperId = `${inputId}-helper`;
+
+  const [showPassword, setShowPassword] = React.useState(false);
+  const isPassword = type === "password";
+
+  const trailingContent =
+    trailing ??
+    (isPassword ? (
+      <button
+        type="button"
+        onClick={() => setShowPassword((value) => !value)}
+        aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+        disabled={disabled}
+        className="flex cursor-pointer items-center text-gray-700 outline-none hover:text-brand-base disabled:pointer-events-none [&>svg]:size-4"
+      >
+        {showPassword ? <Eye /> : <EyeClosed />}
+      </button>
+    ) : null);
 
   return (
     <Field
@@ -31,7 +52,7 @@ function InputField({
       {label ? (
         <FieldLabel
           htmlFor={inputId}
-          className="text-gray-700 group-focus-within:text-brand-base group-data-invalid:text-danger"
+          className="group-focus-within:text-brand-base group-data-invalid:text-danger"
         >
           {label}
         </FieldLabel>
@@ -49,21 +70,23 @@ function InputField({
 
         <Input
           id={inputId}
+          type={isPassword && showPassword ? "text" : type}
           disabled={disabled}
           aria-invalid={error || undefined}
           aria-describedby={helperText ? helperId : undefined}
-          className={cn(icon && "pl-11", className)}
+          className={cn(icon && "pl-11", trailingContent && "pr-11", className)}
           {...props}
         />
+
+        {trailingContent ? (
+          <span className="absolute right-3 flex shrink-0 text-gray-400 [&>svg]:size-5">
+            {trailingContent}
+          </span>
+        ) : null}
       </div>
 
       {helperText ? (
-        <FieldDescription
-          id={helperId}
-          className="text-xs text-gray-500"
-        >
-          {helperText}
-        </FieldDescription>
+        <FieldDescription id={helperId}>{helperText}</FieldDescription>
       ) : null}
     </Field>
   );
