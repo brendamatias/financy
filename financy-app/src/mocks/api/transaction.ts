@@ -81,14 +81,6 @@ export const transactionHandlers = [
 
     db.transactions.unshift(transaction);
 
-    const category = db.categories.find(
-      (item) => item.id === transaction.category.id,
-    );
-
-    if (category) {
-      category.transactionsCount += 1;
-    }
-
     return HttpResponse.json(transaction, { status: 201 });
   }),
 
@@ -106,15 +98,7 @@ export const transactionHandlers = [
       );
     }
 
-    const [removed] = db.transactions.splice(index, 1);
-
-    const category = db.categories.find(
-      (item) => item.id === removed.category.id,
-    );
-
-    if (category && category.transactionsCount > 0) {
-      category.transactionsCount -= 1;
-    }
+    db.transactions.splice(index, 1);
 
     return new HttpResponse(null, { status: 204 });
   }),

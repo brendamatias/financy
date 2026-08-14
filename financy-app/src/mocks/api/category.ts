@@ -2,26 +2,37 @@ import { HttpResponse, delay, http } from "msw";
 
 import { db } from "@/mocks/data";
 
+function withStats(category: CategoryRecord): Category {
+  const transactions = db.transactions.filter(
+    (transaction) => transaction.category.id === category.id,
+  );
+
+  return {
+    ...category,
+    transactionsCount: transactions.length,
+    total: transactions.reduce((total, item) => total + item.amount, 0),
+  };
+}
+
 export const categoryHandlers = [
   http.get("/api/categories", async () => {
     await delay(300);
 
-    return HttpResponse.json(db.categories);
+    return HttpResponse.json(db.categories.map(withStats));
   }),
 
   http.get("/api/categories/summary", async () => {
     await delay(300);
 
-    const mostUsed = [...db.categories].sort(
+    const categories = db.categories.map(withStats);
+
+    const mostUsed = [...categories].sort(
       (a, b) => b.transactionsCount - a.transactionsCount,
     )[0];
 
     return HttpResponse.json({
-      categoriesCount: db.categories.length,
-      transactionsCount: db.categories.reduce(
-        (total, category) => total + category.transactionsCount,
-        0,
-      ),
+      categoriesCount: categories.length,
+      transactionsCount: db.transactions.length,
       mostUsed: mostUsed
         ? { name: mostUsed.name, color: mostUsed.color, icon: mostUsed.icon }
         : null,
@@ -33,18 +44,17 @@ export const categoryHandlers = [
 
     const input = (await request.json()) as CreateCategoryRequest;
 
-    const category: Category = {
+    const category: CategoryRecord = {
       id: crypto.randomUUID(),
       name: input.name,
       description: input.description,
       color: input.color,
       icon: input.icon,
-      transactionsCount: 0,
     };
 
     db.categories.push(category);
 
-    return HttpResponse.json(category, { status: 201 });
+    return HttpResponse.json(withStats(category), { status: 201 });
   }),
 
   http.delete("/api/categories/:id", async ({ params }) => {

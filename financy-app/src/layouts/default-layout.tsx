@@ -16,7 +16,9 @@ function DefaultLayout() {
     <div className="flex min-h-svh flex-col">
       <header className="border-b border-gray-200 bg-white">
         <div className="flex h-17.25 w-full justify-between items-center gap-4 px-12 py-4">
-          <img src={logo} alt="Financy" className="h-6 w-auto" />
+          <NavLink to="/dashboard">
+            <img src={logo} alt="Financy" className="h-6 w-auto" />
+          </NavLink>
 
           <nav className="flex items-center gap-5">
             {navigation.map((item) => (

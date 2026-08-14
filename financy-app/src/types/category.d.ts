@@ -33,7 +33,10 @@ interface Category {
   color: CategoryColor;
   icon: CategoryIconName;
   transactionsCount: number;
+  total: number;
 }
+
+type CategoryRecord = Omit<Category, "transactionsCount" | "total">;
 
 interface CategoriesSummary {
   categoriesCount: number;

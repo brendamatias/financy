@@ -41,6 +41,7 @@ const exampleCategory: Category = {
   color: "blue",
   icon: "food",
   transactionsCount: 12,
+  total: 542.3,
 };
 
 const exampleTransaction: Transaction = {

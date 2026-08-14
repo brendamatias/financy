@@ -1,11 +1,10 @@
-const categories: Category[] = [
+const categories: CategoryRecord[] = [
   {
     id: "1",
     name: "Alimentação",
     description: "Restaurantes, delivery e refeições",
     color: "blue",
     icon: "food",
-    transactionsCount: 12,
   },
   {
     id: "2",
@@ -13,7 +12,6 @@ const categories: Category[] = [
     description: "Cinema, jogos e lazer",
     color: "pink",
     icon: "entertainment",
-    transactionsCount: 2,
   },
   {
     id: "3",
@@ -21,7 +19,6 @@ const categories: Category[] = [
     description: "Aplicações e retornos financeiros",
     color: "green",
     icon: "investment",
-    transactionsCount: 1,
   },
   {
     id: "4",
@@ -29,7 +26,6 @@ const categories: Category[] = [
     description: "Compras de supermercado e mantimentos",
     color: "orange",
     icon: "market",
-    transactionsCount: 3,
   },
   {
     id: "5",
@@ -37,7 +33,6 @@ const categories: Category[] = [
     description: "Renda mensal e bonificações",
     color: "green",
     icon: "briefcase",
-    transactionsCount: 3,
   },
   {
     id: "6",
@@ -45,7 +40,6 @@ const categories: Category[] = [
     description: "Medicamentos, consultas e exames",
     color: "red",
     icon: "health",
-    transactionsCount: 0,
   },
   {
     id: "7",
@@ -53,7 +47,6 @@ const categories: Category[] = [
     description: "Gasolina, transporte público e viagens",
     color: "purple",
     icon: "car",
-    transactionsCount: 8,
   },
   {
     id: "8",
@@ -61,7 +54,6 @@ const categories: Category[] = [
     description: "Energia, água, internet e telefone",
     color: "yellow",
     icon: "energy",
-    transactionsCount: 7,
   },
 ];
 

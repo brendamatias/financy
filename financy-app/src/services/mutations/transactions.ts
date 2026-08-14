@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 
 import { TransactionService } from "../transaction.service";
 import { categoryKeys } from "../queries/categories";
+import { dashboardKeys } from "../queries/dashboard";
 import { transactionKeys } from "../queries/transactions";
 
 export const useCreateTransaction = () => {
@@ -14,6 +15,7 @@ export const useCreateTransaction = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
       queryClient.invalidateQueries({ queryKey: categoryKeys.all });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
       toast.success("Transação criada com sucesso.");
     },
     onError: (error: string) => {
@@ -30,6 +32,7 @@ export const useDeleteTransaction = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
       queryClient.invalidateQueries({ queryKey: categoryKeys.all });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
       toast.success("Transação excluída com sucesso.");
     },
     onError: (error: string) => {
