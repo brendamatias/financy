@@ -5,6 +5,7 @@ import { AuthLayout, DefaultLayout } from "@/layouts";
 import {
   Categories,
   Dashboard,
+  Profile,
   SignIn,
   SignUp,
   Transactions,
@@ -38,6 +39,10 @@ export const router = createBrowserRouter([
       {
         path: "/categories",
         element: <Categories />,
+      },
+      {
+        path: "/profile",
+        element: <Profile />,
       },
       {
         path: "/components",

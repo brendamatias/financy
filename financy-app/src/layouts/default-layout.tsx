@@ -35,9 +35,11 @@ function DefaultLayout() {
             ))}
           </nav>
 
-          <Avatar>
-            <AvatarFallback>CT</AvatarFallback>
-          </Avatar>
+          <NavLink to="/profile" aria-label="Perfil">
+            <Avatar>
+              <AvatarFallback>CT</AvatarFallback>
+            </Avatar>
+          </NavLink>
         </div>
       </header>
 
