@@ -53,6 +53,51 @@ describe("AuthService.register", () => {
   });
 });
 
+describe("AuthService validation", () => {
+  it("rejects an invalid email on register", async () => {
+    await expect(
+      authService.register({ ...validUser, email: "not-an-email" }),
+    ).rejects.toThrow("Informe um e-mail válido");
+  });
+
+  it("rejects a password shorter than 8 characters on register", async () => {
+    await expect(
+      authService.register({ ...validUser, password: "1234" }),
+    ).rejects.toThrow("A senha deve ter no mínimo 8 caracteres");
+  });
+
+  it("rejects an empty name on register", async () => {
+    await expect(
+      authService.register({ ...validUser, name: "   " }),
+    ).rejects.toThrow("Informe seu nome completo");
+  });
+
+  it("does not create the user when validation fails", async () => {
+    await expect(
+      authService.register({ ...validUser, email: "not-an-email" }),
+    ).rejects.toThrow();
+
+    expect(await prismaClient.user.count()).toBe(0);
+  });
+
+  it("rejects an invalid email on login", async () => {
+    await expect(
+      authService.login({ email: "not-an-email", password: "12345678" }),
+    ).rejects.toThrow("Informe um e-mail válido");
+  });
+
+  it("trims the email before looking the user up", async () => {
+    await authService.register(validUser);
+
+    const result = await authService.login({
+      email: `  ${validUser.email}  `,
+      password: validUser.password,
+    });
+
+    expect(result.user.email).toBe(validUser.email);
+  });
+});
+
 describe("AuthService.login", () => {
   it("authenticates with the correct credentials", async () => {
     const created = await authService.register(validUser);

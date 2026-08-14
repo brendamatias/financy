@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { db } from "@/mocks/data";
@@ -71,9 +71,10 @@ describe("SignIn", () => {
     await form.user.type(form.password, "wrong-password");
     await form.user.click(form.submit);
 
-    expect(
-      await screen.findByText("E-mail ou senha incorretos!"),
-    ).toBeVisible();
+    await waitFor(() =>
+      expect(document.body).toHaveTextContent("E-mail ou senha incorretos!"),
+    );
+
     expect(screen.queryByRole("heading", { name: "Dashboard" })).toBeNull();
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
   });

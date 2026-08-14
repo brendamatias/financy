@@ -1,11 +1,15 @@
 import { prismaClient } from "../../prisma/prisma";
 import { LoginInput, RegisterInput } from "../dtos/input/auth.input";
 import { User } from "../generated/prisma/client";
+import { loginSchema, registerSchema } from "../schemas/auth.schema";
 import { hashPassword, comparePasswords } from "../utils/hash";
 import { signJwt } from "../utils/jwt";
+import { validate } from "../utils/validate";
 
 export class AuthService {
-  async login(data: LoginInput) {
+  async login(input: LoginInput) {
+    const data = validate(loginSchema, input);
+
     const user = await prismaClient.user.findUnique({
       where: { email: data.email },
     });
@@ -23,7 +27,9 @@ export class AuthService {
     return this.generateTokens(user);
   }
 
-  async register(data: RegisterInput) {
+  async register(input: RegisterInput) {
+    const data = validate(registerSchema, input);
+
     const existingUser = await prismaClient.user.findUnique({
       where: { email: data.email },
     });
