@@ -25,7 +25,7 @@ const tagVariantList = [
 
 function App() {
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-10 p-10 text-left">
+    <main className="flex flex-col gap-10 text-left">
       <h1 className="text-3xl font-medium">Button</h1>
 
       {sizes.map((size) => (

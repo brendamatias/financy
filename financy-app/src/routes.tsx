@@ -1,20 +1,48 @@
 import { createBrowserRouter } from "react-router-dom";
 
 import App from "@/App";
-import { SignIn } from "@/pages/sign-in";
-import { SignUp } from "@/pages/sign-up";
+import { AuthLayout, DefaultLayout } from "@/layouts";
+import {
+  Categories,
+  Dashboard,
+  SignIn,
+  SignUp,
+  Transactions,
+} from "@/pages";
 
 export const router = createBrowserRouter([
   {
-    path: "/",
-    element: <SignIn />,
+    element: <AuthLayout />,
+    children: [
+      {
+        path: "/",
+        element: <SignIn />,
+      },
+      {
+        path: "/sign-up",
+        element: <SignUp />,
+      },
+    ],
   },
   {
-    path: "/sign-up",
-    element: <SignUp />,
-  },
-  {
-    path: "/components",
-    element: <App />,
+    element: <DefaultLayout />,
+    children: [
+      {
+        path: "/dashboard",
+        element: <Dashboard />,
+      },
+      {
+        path: "/transactions",
+        element: <Transactions />,
+      },
+      {
+        path: "/categories",
+        element: <Categories />,
+      },
+      {
+        path: "/components",
+        element: <App />,
+      },
+    ],
   },
 ]);
