@@ -1,9 +1,17 @@
 import { prismaClient } from "../../prisma/prisma";
-import { LoginInput, RegisterInput } from "../dtos/input/auth.input";
+import {
+  LoginInput,
+  RefreshTokenInput,
+  RegisterInput,
+} from "../dtos/input/auth.input";
 import { User } from "../generated/prisma/client";
-import { loginSchema, registerSchema } from "../schemas/auth.schema";
+import {
+  loginSchema,
+  refreshTokenSchema,
+  registerSchema,
+} from "../schemas/auth.schema";
 import { hashPassword, comparePasswords } from "../utils/hash";
-import { signJwt } from "../utils/jwt";
+import { signJwt, verifyJwt, type JwtPayload } from "../utils/jwt";
 import { validate } from "../utils/validate";
 
 export class AuthService {
@@ -47,6 +55,28 @@ export class AuthService {
         password: hash,
       },
     });
+
+    return this.generateTokens(user);
+  }
+
+  async refreshToken(input: RefreshTokenInput) {
+    const data = validate(refreshTokenSchema, input);
+
+    let payload: JwtPayload;
+
+    try {
+      payload = verifyJwt(data.refreshToken);
+    } catch {
+      throw new Error("Sessão expirada. Faça login novamente.");
+    }
+
+    const user = await prismaClient.user.findUnique({
+      where: { id: payload.id },
+    });
+
+    if (!user) {
+      throw new Error("Sessão expirada. Faça login novamente.");
+    }
 
     return this.generateTokens(user);
   }

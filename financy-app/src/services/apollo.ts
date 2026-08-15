@@ -1,4 +1,10 @@
-import { ApolloClient, HttpLink, InMemoryCache, from } from "@apollo/client";
+import {
+  ApolloClient,
+  HttpLink,
+  InMemoryCache,
+  Observable,
+  from,
+} from "@apollo/client";
 import { SetContextLink } from "@apollo/client/link/context";
 import { ErrorLink } from "@apollo/client/link/error";
 
@@ -8,28 +14,60 @@ const httpLink = new HttpLink({
   uri: import.meta.env.VITE_GRAPHQL_URL,
 });
 
-const authLink = new SetContextLink(({ headers }) => {
+const authLink: SetContextLink = new SetContextLink(({ headers }) => {
   const token = useAuthStore.getState().token;
 
   return {
     headers: {
-      ...headers,
+      ...(headers ?? {}),
       ...(token ? { authorization: `Bearer ${token}` } : {}),
     },
   };
 });
 
-const errorLink = new ErrorLink(({ error }) => {
-  const isUnauthenticated = error?.message
-    ?.toLowerCase()
-    .includes("não autenticado");
+function isUnauthenticated(message?: string) {
+  return message?.toLowerCase().includes("não autenticado") ?? false;
+}
 
-  if (isUnauthenticated) {
-    useAuthStore.getState().signOut();
-  }
-});
+const refreshLink: ErrorLink = new ErrorLink(
+  ({ error, operation, forward }) => {
+    if (!isUnauthenticated(error?.message)) {
+      return;
+    }
 
-export const apolloClient = new ApolloClient({
-  link: from([errorLink, authLink, httpLink]),
+    const { skipAuthRetry } = operation.getContext();
+
+    if (skipAuthRetry) {
+      useAuthStore.getState().signOut();
+      return;
+    }
+
+    return new Observable((observer) => {
+      useAuthStore
+        .getState()
+        .refreshSession()
+        .then((token) => {
+          if (!token) {
+            useAuthStore.getState().signOut();
+            observer.error(error);
+            return;
+          }
+
+          operation.setContext(({ headers = {} }: { headers?: object }) => ({
+            headers: { ...headers, authorization: `Bearer ${token}` },
+          }));
+
+          forward(operation).subscribe(observer);
+        })
+        .catch((refreshError) => {
+          useAuthStore.getState().signOut();
+          observer.error(refreshError);
+        });
+    });
+  },
+);
+
+export const apolloClient: ApolloClient = new ApolloClient({
+  link: from([refreshLink, authLink, httpLink]),
   cache: new InMemoryCache(),
 });

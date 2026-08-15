@@ -30,3 +30,11 @@ interface LoginResponse {
 interface RegisterResponse {
   register: AuthPayload;
 }
+
+interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+interface RefreshTokenResponse {
+  refreshToken: AuthPayload;
+}

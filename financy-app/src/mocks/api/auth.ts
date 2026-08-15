@@ -8,13 +8,31 @@ const MOCK_PASSWORD = "12345678";
 
 function buildPayload(user: User) {
   return {
-    token: crypto.randomUUID(),
-    refreshToken: crypto.randomUUID(),
-    user,
+    __typename: "LoginOutput",
+    token: `token-${crypto.randomUUID()}`,
+    refreshToken: `refresh-${crypto.randomUUID()}`,
+    user: { __typename: "UserModel", ...user },
   };
 }
 
 export const authHandlers = [
+  api.mutation<RefreshTokenResponse, { data: RefreshTokenRequest }>(
+    "RefreshToken",
+    async ({ variables }) => {
+      await delay(200);
+
+      if (!variables.data.refreshToken.startsWith("refresh-")) {
+        return HttpResponse.json({
+          errors: [{ message: "Sessão expirada. Faça login novamente." }],
+        });
+      }
+
+      return HttpResponse.json({
+        data: { refreshToken: buildPayload(db.user) },
+      });
+    },
+  ),
+
   api.mutation<LoginResponse, { data: LoginRequest }>(
     "Login",
     async ({ variables }) => {

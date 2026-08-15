@@ -4,25 +4,29 @@ import { persist } from "zustand/middleware";
 
 import {
   LOGIN_MUTATION,
+  REFRESH_TOKEN_MUTATION,
   REGISTER_MUTATION,
 } from "@/services/graphql/mutations/auth";
 import { apolloClient } from "@/services/apollo";
 
 interface AuthState {
   token: string | null;
+  refreshToken: string | null;
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   signIn: (data: LoginRequest) => Promise<boolean>;
   signUp: (data: RegisterRequest) => Promise<boolean>;
+  refreshSession: () => Promise<string | null>;
   signOut: () => void;
   updateUser: (user: User) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       token: null,
+      refreshToken: null,
       user: null,
       isAuthenticated: false,
       isLoading: false,
@@ -88,11 +92,10 @@ export const useAuthStore = create<AuthState>()(
             return false;
           }
 
-          const { token, user } = register;
-
           set({
-            token,
-            user,
+            token: register.token,
+            refreshToken: register.refreshToken,
+            user: register.user,
             isAuthenticated: true,
           });
 
@@ -112,8 +115,46 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      refreshSession: async () => {
+        const currentRefreshToken = get().refreshToken;
+
+        if (!currentRefreshToken) {
+          return null;
+        }
+
+        try {
+          const response = await apolloClient.mutate({
+            mutation: REFRESH_TOKEN_MUTATION,
+            variables: { data: { refreshToken: currentRefreshToken } },
+            context: { skipAuthRetry: true },
+          });
+
+          const refreshed = response.data?.refreshToken;
+
+          if (!refreshed) {
+            return null;
+          }
+
+          set({
+            token: refreshed.token,
+            refreshToken: refreshed.refreshToken,
+            user: refreshed.user,
+            isAuthenticated: true,
+          });
+
+          return refreshed.token;
+        } catch {
+          return null;
+        }
+      },
+
       signOut: () => {
-        set({ token: null, user: null, isAuthenticated: false });
+        set({
+          token: null,
+          refreshToken: null,
+          user: null,
+          isAuthenticated: false,
+        });
         apolloClient.clearStore();
       },
 
@@ -121,8 +162,9 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "financy:auth",
-      partialize: ({ token, user, isAuthenticated }) => ({
+      partialize: ({ token, refreshToken, user, isAuthenticated }) => ({
         token,
+        refreshToken,
         user,
         isAuthenticated,
       }),

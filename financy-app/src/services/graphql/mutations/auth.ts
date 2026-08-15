@@ -37,3 +37,22 @@ export const REGISTER_MUTATION: TypedDocumentNode<
     }
   }
 `;
+
+export const REFRESH_TOKEN_MUTATION: TypedDocumentNode<
+  RefreshTokenResponse,
+  { data: RefreshTokenRequest }
+> = gql`
+  mutation RefreshToken($data: RefreshTokenInput!) {
+    refreshToken(data: $data) {
+      token
+      refreshToken
+      user {
+        id
+        name
+        email
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`;

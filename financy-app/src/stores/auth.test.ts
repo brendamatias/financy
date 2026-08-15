@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
+import { HttpResponse, graphql } from "msw";
+
 import { db } from "@/mocks/data";
 import { useAuthStore } from "@/stores/auth";
+import { server } from "@/tests/setup";
+
+const api = graphql.link(import.meta.env.VITE_GRAPHQL_URL);
 
 const credentials = {
   email: db.user.email,
@@ -79,5 +84,58 @@ describe("authStore.signOut", () => {
     expect(isAuthenticated).toBe(false);
     expect(token).toBeNull();
     expect(user).toBeNull();
+  });
+});
+
+describe("authStore.refreshSession", () => {
+  it("does nothing when there is no refresh token", async () => {
+    const token = await useAuthStore.getState().refreshSession();
+
+    expect(token).toBeNull();
+    expect(useAuthStore.getState().isAuthenticated).toBe(false);
+  });
+
+  it("replaces the tokens of the session", async () => {
+    await useAuthStore.getState().signIn(credentials);
+
+    const previous = useAuthStore.getState();
+    const token = await useAuthStore.getState().refreshSession();
+
+    const current = useAuthStore.getState();
+
+    expect(token).toBeTruthy();
+    expect(current.token).not.toBe(previous.token);
+    expect(current.refreshToken).not.toBe(previous.refreshToken);
+    expect(current.isAuthenticated).toBe(true);
+  });
+
+  it("keeps the session when the refresh fails", async () => {
+    await useAuthStore.getState().signIn(credentials);
+
+    server.use(
+      api.mutation("RefreshToken", () =>
+        HttpResponse.json({
+          errors: [{ message: "Sessão expirada. Faça login novamente." }],
+        }),
+      ),
+    );
+
+    const token = await useAuthStore.getState().refreshSession();
+
+    expect(token).toBeNull();
+  });
+
+  it("stores the refresh token when signing in", async () => {
+    await useAuthStore.getState().signIn(credentials);
+
+    expect(useAuthStore.getState().refreshToken).toBeTruthy();
+  });
+
+  it("clears the refresh token when signing out", async () => {
+    await useAuthStore.getState().signIn(credentials);
+
+    useAuthStore.getState().signOut();
+
+    expect(useAuthStore.getState().refreshToken).toBeNull();
   });
 });

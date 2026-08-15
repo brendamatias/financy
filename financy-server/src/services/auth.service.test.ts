@@ -128,3 +128,47 @@ describe("AuthService.login", () => {
     ).rejects.toThrow("E-mail ou senha incorretos!");
   });
 });
+
+describe("AuthService.refreshToken", () => {
+  it("returns a new pair of tokens", async () => {
+    const { refreshToken, user } = await authService.register(validUser);
+
+    const result = await authService.refreshToken({ refreshToken });
+
+    expect(result.token).toBeTruthy();
+    expect(result.refreshToken).toBeTruthy();
+    expect(result.user.id).toBe(user.id);
+  });
+
+  it("signs the new token for the same user", async () => {
+    const { refreshToken, user } = await authService.register(validUser);
+
+    const result = await authService.refreshToken({ refreshToken });
+    const payload = verifyJwt(result.token);
+
+    expect(payload.id).toBe(user.id);
+    expect(payload.email).toBe(user.email);
+  });
+
+  it("rejects a malformed refresh token", async () => {
+    await expect(
+      authService.refreshToken({ refreshToken: "nao-e-um-token" }),
+    ).rejects.toThrow("Sessão expirada. Faça login novamente.");
+  });
+
+  it("rejects an empty refresh token", async () => {
+    await expect(
+      authService.refreshToken({ refreshToken: "  " }),
+    ).rejects.toThrow("Informe o refresh token");
+  });
+
+  it("rejects a token signed for a user that no longer exists", async () => {
+    const { refreshToken, user } = await authService.register(validUser);
+
+    await prismaClient.user.delete({ where: { id: user.id } });
+
+    await expect(authService.refreshToken({ refreshToken })).rejects.toThrow(
+      "Sessão expirada. Faça login novamente.",
+    );
+  });
+});
