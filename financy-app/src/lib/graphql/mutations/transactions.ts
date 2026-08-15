@@ -5,6 +5,7 @@ import { TRANSACTION_FRAGMENT } from "../queries/transactions";
 export const REFETCH_TRANSACTIONS = [
   "ListTransactions",
   "ListTransactionPeriods",
+  "ListCategories",
   "GetCategoriesSummary",
   "GetDashboardSummary",
 ];

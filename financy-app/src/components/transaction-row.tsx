@@ -8,7 +8,11 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Tag } from "@/components/ui/tag";
 import { TransactionType } from "@/components/ui/transaction-type";
 import { getCategoryIcon } from "@/lib/category-icons";
-import { formatDate, formatSignedCurrency } from "@/lib/format";
+import {
+  formatCompactSignedCurrency,
+  formatDate,
+  formatSignedCurrency,
+} from "@/lib/format";
 
 function TransactionRow({
   transaction,
@@ -49,8 +53,15 @@ function TransactionRow({
         </div>
       </TableCell>
 
-      <TableCell className="text-right text-sm font-semibold">
-        {formatSignedCurrency(
+      <TableCell
+        className="text-right text-sm font-semibold"
+        title={formatSignedCurrency(
+          transaction.type === "expense"
+            ? -transaction.amount
+            : transaction.amount,
+        )}
+      >
+        {formatCompactSignedCurrency(
           transaction.type === "expense"
             ? -transaction.amount
             : transaction.amount,

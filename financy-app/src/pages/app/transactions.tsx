@@ -47,7 +47,8 @@ function Transactions() {
   const { data: categoriesData } = useQuery(LIST_CATEGORIES);
   const categories = categoriesData?.listCategories;
   const { data: periodsData } = useQuery(LIST_TRANSACTION_PERIODS);
-  const { data, loading: isLoading } = useQuery(LIST_TRANSACTIONS, {
+  const { data, loading } = useQuery(LIST_TRANSACTIONS, {
+    fetchPolicy: "cache-and-network",
     variables: {
       data: {
         page,
@@ -59,6 +60,8 @@ function Transactions() {
       },
     },
   });
+
+  const isLoading = loading && !data;
 
   const [deleteTransaction, { loading: isPending }] = useMutation(
     DELETE_TRANSACTION,

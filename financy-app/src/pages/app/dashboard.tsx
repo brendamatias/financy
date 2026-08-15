@@ -19,7 +19,13 @@ import { Link } from "@/components/ui/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tag } from "@/components/ui/tag";
 import { getCategoryIcon } from "@/lib/category-icons";
-import { formatCurrency, formatDate, formatSignedCurrency } from "@/lib/format";
+import {
+  formatCompactCurrency,
+  formatCompactSignedCurrency,
+  formatCurrency,
+  formatDate,
+  formatSignedCurrency,
+} from "@/lib/format";
 import {
   GET_DASHBOARD_SUMMARY,
   LIST_CATEGORIES,
@@ -53,35 +59,49 @@ function SectionHeader({
 }
 
 function Dashboard() {
-  const { data: summaryData, loading: isLoadingSummary } = useQuery(
+  const { data: summaryData, loading: loadingSummary } = useQuery(
     GET_DASHBOARD_SUMMARY,
+    { fetchPolicy: "cache-and-network" },
   );
   const summary = summaryData?.getDashboardSummary;
-  const { data: transactionsData, loading: isLoadingTransactions } = useQuery(
+  const isLoadingSummary = loadingSummary && !summary;
+
+  const { data: transactionsData, loading: loadingTransactions } = useQuery(
     LIST_TRANSACTIONS,
-    { variables: { data: { page: 1, pageSize: RECENT_TRANSACTIONS } } },
+    {
+      variables: { data: { page: 1, pageSize: RECENT_TRANSACTIONS } },
+      fetchPolicy: "cache-and-network",
+    },
   );
   const transactions = transactionsData?.listTransactions;
-  const { data: categoriesData, loading: isLoadingCategories } =
-    useQuery(LIST_CATEGORIES);
+  const isLoadingTransactions = loadingTransactions && !transactions;
+
+  const { data: categoriesData, loading: loadingCategories } = useQuery(
+    LIST_CATEGORIES,
+    { fetchPolicy: "cache-and-network" },
+  );
   const categories = categoriesData?.listCategories;
+  const isLoadingCategories = loadingCategories && !categories;
 
   const summaryCards = [
     {
       label: "Saldo total",
-      value: formatCurrency(summary?.balance ?? 0),
+      value: formatCompactCurrency(summary?.balance ?? 0),
+      title: formatCurrency(summary?.balance ?? 0),
       icon: Wallet,
       iconClassName: "text-purple-base",
     },
     {
       label: "Receitas do mês",
-      value: formatCurrency(summary?.income ?? 0),
+      value: formatCompactCurrency(summary?.income ?? 0),
+      title: formatCurrency(summary?.income ?? 0),
       icon: CircleArrowUp,
       iconClassName: "text-green-base",
     },
     {
       label: "Despesas do mês",
-      value: formatCurrency(summary?.expenses ?? 0),
+      value: formatCompactCurrency(summary?.expenses ?? 0),
+      title: formatCurrency(summary?.expenses ?? 0),
       icon: CircleArrowDown,
       iconClassName: "text-red-base",
     },
@@ -103,6 +123,7 @@ function Dashboard() {
                 key={item.label}
                 label={item.label}
                 value={item.value}
+                title={item.title}
                 icon={item.icon}
                 iconClassName={item.iconClassName}
               />
@@ -167,8 +188,15 @@ function Dashboard() {
                       </Tag>
 
                       <div className="flex w-full items-center justify-end gap-2 sm:w-40">
-                        <strong className="text-sm font-semibold text-gray-800">
-                          {formatSignedCurrency(
+                        <strong
+                          title={formatSignedCurrency(
+                            transaction.type === "expense"
+                              ? -transaction.amount
+                              : transaction.amount,
+                          )}
+                          className="text-sm font-semibold text-gray-800"
+                        >
+                          {formatCompactSignedCurrency(
                             transaction.type === "expense"
                               ? -transaction.amount
                               : transaction.amount,
@@ -223,8 +251,11 @@ function Dashboard() {
                       {category.transactionsCount === 1 ? "item" : "itens"}
                     </span>
 
-                    <strong className="text-sm font-semibold text-gray-800">
-                      {formatCurrency(category.total ?? 0)}
+                    <strong
+                      title={formatCurrency(category.total ?? 0)}
+                      className="text-sm font-semibold text-gray-800"
+                    >
+                      {formatCompactCurrency(category.total ?? 0)}
                     </strong>
                   </li>
                 ))}

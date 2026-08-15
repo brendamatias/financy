@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  formatCompactCurrency,
+  formatCompactSignedCurrency,
   formatCurrency,
   formatDate,
   formatPeriod,
@@ -11,6 +13,58 @@ import {
 function normalize(value: string) {
   return value.replace(/\u00a0/g, " ");
 }
+
+describe("formatCompactCurrency", () => {
+  it("keeps values below a million untouched", () => {
+    expect(normalize(formatCompactCurrency(999_499.99))).toBe("R$ 999.499,99");
+  });
+
+  it("shortens millions", () => {
+    expect(normalize(formatCompactCurrency(3_213_123.64))).toBe("R$ 3,21 MM");
+  });
+
+  it("shortens billions", () => {
+    expect(normalize(formatCompactCurrency(3_213_123_138.64))).toBe(
+      "R$ 3,21 BI",
+    );
+  });
+
+  it("shortens trillions", () => {
+    expect(normalize(formatCompactCurrency(1_500_000_000_000))).toBe(
+      "R$ 1,50 TRI",
+    );
+  });
+
+  it("moves up a unit instead of rounding to a thousand", () => {
+    expect(normalize(formatCompactCurrency(999_999_999.9))).toBe("R$ 1,00 BI");
+  });
+
+  it("keeps the minus sign", () => {
+    expect(normalize(formatCompactCurrency(-4_500_000))).toBe("-R$ 4,50 MM");
+  });
+
+  it("formats zero", () => {
+    expect(normalize(formatCompactCurrency(0))).toBe("R$ 0,00");
+  });
+});
+
+describe("formatCompactSignedCurrency", () => {
+  it("shortens big amounts keeping the sign", () => {
+    expect(normalize(formatCompactSignedCurrency(-4_124_321_432.43))).toBe(
+      "- R$ 4,12 BI",
+    );
+  });
+
+  it("marks positive amounts with a plus", () => {
+    expect(normalize(formatCompactSignedCurrency(3_123_132.13))).toBe(
+      "+ R$ 3,12 MM",
+    );
+  });
+
+  it("keeps small amounts untouched", () => {
+    expect(normalize(formatCompactSignedCurrency(-89.5))).toBe("- R$ 89,50");
+  });
+});
 
 describe("formatCurrency", () => {
   it("formats using the brazilian currency", () => {

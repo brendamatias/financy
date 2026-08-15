@@ -48,6 +48,19 @@ describe("DialogCategoryForm", () => {
     await waitFor(() => expect(screen.queryByLabelText("Título")).toBeNull());
   });
 
+  it("clears the form after creating a category", async () => {
+    const { user } = await openDialog();
+
+    await user.type(screen.getByLabelText("Título"), "Educação");
+    await user.click(screen.getByRole("button", { name: "Salvar" }));
+
+    await waitFor(() => expect(screen.queryByLabelText("Título")).toBeNull());
+
+    await user.click(screen.getByRole("button", { name: "Abrir" }));
+
+    expect(await screen.findByLabelText("Título")).toHaveValue("");
+  });
+
   it("clears the form when the dialog is closed without saving", async () => {
     const { user } = await openDialog();
 

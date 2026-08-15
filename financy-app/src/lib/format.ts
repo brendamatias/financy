@@ -9,14 +9,39 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   year: "2-digit",
 });
 
+const compactUnits = [
+  { threshold: 1e12, suffix: "TRI" },
+  { threshold: 1e9, suffix: "BI" },
+  { threshold: 1e6, suffix: "MM" },
+];
+
 function formatCurrency(value: number) {
   return currencyFormatter.format(value);
+}
+
+function formatCompactCurrency(value: number) {
+  const absolute = Math.abs(value);
+  const unit = compactUnits.find(
+    ({ threshold }) => absolute >= threshold * 0.9995,
+  );
+
+  if (!unit) {
+    return currencyFormatter.format(value);
+  }
+
+  return `${currencyFormatter.format(value / unit.threshold)} ${unit.suffix}`;
 }
 
 function formatSignedCurrency(value: number) {
   const sign = value < 0 ? "-" : "+";
 
   return `${sign} ${currencyFormatter.format(Math.abs(value))}`;
+}
+
+function formatCompactSignedCurrency(value: number) {
+  const sign = value < 0 ? "-" : "+";
+
+  return `${sign} ${formatCompactCurrency(Math.abs(value))}`;
 }
 
 function formatDate(value: string) {
@@ -44,6 +69,8 @@ function formatPeriod(period: string) {
 }
 
 export {
+  formatCompactCurrency,
+  formatCompactSignedCurrency,
   formatCurrency,
   formatDate,
   formatPeriod,

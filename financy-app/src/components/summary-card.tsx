@@ -8,11 +8,13 @@ import { cn } from "@/lib/utils";
 function SummaryCard({
   label,
   value,
+  title,
   icon: Icon,
   iconClassName,
 }: {
   label: string;
   value: React.ReactNode;
+  title?: string;
   icon: LucideIcon;
   iconClassName?: string;
 }) {
@@ -23,7 +25,10 @@ function SummaryCard({
       </div>
 
       <div className="flex flex-col gap-2">
-        <strong className="text-[28px] leading-8 font-bold text-gray-800">
+        <strong
+          title={title}
+          className="text-[28px] leading-8 font-bold text-gray-800"
+        >
           {value}
         </strong>
 

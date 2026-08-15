@@ -16,10 +16,16 @@ import {
 } from "@/lib/graphql";
 
 function Categories() {
-  const { data, loading: isLoading } = useQuery(LIST_CATEGORIES);
-  const { data: summaryData, loading: isLoadingSummary } = useQuery(
+  const { data, loading } = useQuery(LIST_CATEGORIES, {
+    fetchPolicy: "cache-and-network",
+  });
+  const isLoading = loading && !data;
+
+  const { data: summaryData, loading: loadingSummary } = useQuery(
     GET_CATEGORIES_SUMMARY,
+    { fetchPolicy: "cache-and-network" },
   );
+  const isLoadingSummary = loadingSummary && !summaryData;
 
   const [deleteCategory, { loading: isPending }] = useMutation(
     DELETE_CATEGORY,

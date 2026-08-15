@@ -107,39 +107,36 @@ function DialogCategoryForm({
     createCategory({ variables: { data } });
   }
 
-  async function handleOpenChange(next: boolean) {
-    setOpen(next);
-
-    if (!next) {
-      reset(defaultValues);
+  React.useEffect(() => {
+    if (!open) {
       return;
     }
+
+    reset(defaultValues);
 
     if (!categoryId) {
       return;
     }
 
-    const { data, error } = await loadCategory({
-      variables: { id: categoryId },
+    loadCategory({ variables: { id: categoryId } }).then(({ data, error }) => {
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      if (data) {
+        reset({
+          name: data.getCategory.name,
+          description: data.getCategory.description,
+          icon: data.getCategory.icon,
+          color: data.getCategory.color,
+        });
+      }
     });
-
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-
-    if (data) {
-      reset({
-        name: data.getCategory.name,
-        description: data.getCategory.description,
-        icon: data.getCategory.icon,
-        color: data.getCategory.color,
-      });
-    }
-  }
+  }, [open, categoryId, loadCategory, reset]);
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
       <DialogContent

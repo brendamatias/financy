@@ -30,12 +30,12 @@ WORKDIR /app
 
 RUN mkdir -p /app/data && chown -R node:node /app
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-
-RUN npx prisma generate
+COPY --from=deps --chown=node:node /app/node_modules ./node_modules
+COPY --chown=node:node . .
 
 USER node
+
+RUN npx prisma generate
 
 EXPOSE 4000
 
