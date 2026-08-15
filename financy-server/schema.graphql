@@ -33,6 +33,15 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTimeISO
 
+input ListTransactionsInput {
+  categoryId: String
+  page: Int
+  pageSize: Int
+  period: String
+  searchQuery: String
+  type: String
+}
+
 input LoginInput {
   email: String!
   password: String!
@@ -52,11 +61,25 @@ type Mutation {
   updateCategory(data: UpdateCategoryInput!, id: String!): CategoryModel!
 }
 
+type PaginatedTransactionsModel {
+  data: [TransactionModel!]!
+  meta: PaginationMetaModel!
+}
+
+type PaginationMetaModel {
+  page: Int!
+  pageSize: Int!
+  total: Int!
+  totalPages: Int!
+}
+
 type Query {
   getCategoriesSummary: CategoriesSummaryModel!
   getCategory(id: String!): CategoryModel!
   getUser(id: String!): UserModel!
   listCategories: [CategoryModel!]!
+  listTransactionPeriods: [String!]!
+  listTransactions(data: ListTransactionsInput): PaginatedTransactionsModel!
 }
 
 input RegisterInput {
@@ -69,6 +92,20 @@ type RegisterOutput {
   refreshToken: String!
   token: String!
   user: UserModel!
+}
+
+type TransactionModel {
+  amount: Float!
+  category: CategoryModel
+  categoryId: String!
+  createdAt: DateTimeISO!
+  date: DateTimeISO!
+  description: String!
+  id: ID!
+  type: String!
+  updatedAt: DateTimeISO!
+  user: UserModel
+  userId: String!
 }
 
 input UpdateCategoryInput {

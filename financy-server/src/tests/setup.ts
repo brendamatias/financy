@@ -26,6 +26,7 @@ beforeAll(() => {
 beforeEach(async () => {
   const { prismaClient } = await import("../../prisma/prisma");
 
+  await prismaClient.transaction.deleteMany();
   await prismaClient.category.deleteMany();
   await prismaClient.user.deleteMany();
 });
