@@ -46,7 +46,7 @@ describe("authStore.signIn", () => {
   });
 
   it("persists the session so a reload keeps the user signed in", async () => {
-    await useAuthStore.getState().signIn(credentials);
+    await useAuthStore.getState().signIn({ ...credentials, rememberMe: true });
 
     const persisted = JSON.parse(localStorage.getItem("financy:auth") ?? "{}");
 
@@ -70,6 +70,99 @@ describe("authStore.signUp", () => {
     expect(isAuthenticated).toBe(true);
     expect(user?.name).toBe("Nova Conta");
     expect(user?.email).toBe("nova@teste.com");
+  });
+});
+
+describe("authStore rememberMe", () => {
+  it("keeps the session in localStorage when the user asks to be remembered", async () => {
+    await useAuthStore.getState().signIn({ ...credentials, rememberMe: true });
+
+    expect(localStorage.getItem("financy:auth")).toBeTruthy();
+    expect(sessionStorage.getItem("financy:auth")).toBeNull();
+  });
+
+  it("keeps the session only in sessionStorage by default", async () => {
+    await useAuthStore.getState().signIn(credentials);
+
+    expect(sessionStorage.getItem("financy:auth")).toBeTruthy();
+    expect(localStorage.getItem("financy:auth")).toBeNull();
+  });
+
+  it("moves the session when the choice changes", async () => {
+    await useAuthStore.getState().signIn({ ...credentials, rememberMe: true });
+
+    expect(localStorage.getItem("financy:auth")).toBeTruthy();
+
+    useAuthStore.getState().signOut();
+    await useAuthStore.getState().signIn({ ...credentials, rememberMe: false });
+
+    expect(localStorage.getItem("financy:auth")).toBeNull();
+    expect(sessionStorage.getItem("financy:auth")).toBeTruthy();
+  });
+
+  it("remembers the email of the last sign in", async () => {
+    await useAuthStore.getState().signIn({ ...credentials, rememberMe: true });
+
+    expect(useAuthStore.getState().rememberedEmail).toBe(credentials.email);
+    expect(localStorage.getItem("financy:remembered-email")).toBe(
+      credentials.email,
+    );
+  });
+
+  it("does not remember the email when the checkbox is off", async () => {
+    await useAuthStore.getState().signIn(credentials);
+
+    expect(useAuthStore.getState().rememberedEmail).toBe("");
+    expect(localStorage.getItem("financy:remembered-email")).toBeNull();
+  });
+
+  it("keeps the email after signing out", async () => {
+    await useAuthStore.getState().signIn({ ...credentials, rememberMe: true });
+
+    useAuthStore.getState().signOut();
+
+    expect(localStorage.getItem("financy:remembered-email")).toBe(
+      credentials.email,
+    );
+  });
+
+  it("forgets the email when the user signs in without the checkbox", async () => {
+    await useAuthStore.getState().signIn({ ...credentials, rememberMe: true });
+
+    useAuthStore.getState().signOut();
+
+    await useAuthStore.getState().signIn(credentials);
+
+    expect(localStorage.getItem("financy:remembered-email")).toBeNull();
+  });
+
+  it("keeps the preference after signing out", async () => {
+    await useAuthStore.getState().signIn({ ...credentials, rememberMe: true });
+
+    useAuthStore.getState().signOut();
+
+    expect(useAuthStore.getState().rememberMe).toBe(true);
+    expect(localStorage.getItem("financy:remember-me")).toBe("true");
+  });
+
+  it("clears both storages when signing out", async () => {
+    await useAuthStore.getState().signIn({ ...credentials, rememberMe: true });
+
+    useAuthStore.getState().signOut();
+
+    expect(localStorage.getItem("financy:auth")).toBeNull();
+    expect(sessionStorage.getItem("financy:auth")).toBeNull();
+  });
+
+  it("forgets the preference when the user signs in without it", async () => {
+    await useAuthStore.getState().signIn({ ...credentials, rememberMe: true });
+
+    useAuthStore.getState().signOut();
+
+    await useAuthStore.getState().signIn({ ...credentials, rememberMe: false });
+
+    expect(useAuthStore.getState().rememberMe).toBe(false);
+    expect(localStorage.getItem("financy:remember-me")).toBe("false");
   });
 });
 

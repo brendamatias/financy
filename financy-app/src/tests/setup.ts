@@ -53,9 +53,12 @@ afterEach(async () => {
   resetDb();
   cleanup();
   localStorage.clear();
+  sessionStorage.clear();
   await apolloClient.clearStore();
 
   useAuthStore.setState({
+    rememberMe: false,
+    rememberedEmail: "",
     token: null,
     user: null,
     isAuthenticated: false,

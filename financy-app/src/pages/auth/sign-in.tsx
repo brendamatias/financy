@@ -35,14 +35,14 @@ function SignIn() {
   } = useForm<SignInFormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      email: "",
+      email: useAuthStore.getState().rememberedEmail,
       password: "",
-      remember: false,
+      remember: useAuthStore.getState().rememberMe,
     },
   });
 
-  async function onSubmit({ email, password }: SignInFormData) {
-    const success = await signIn({ email, password });
+  async function onSubmit({ email, password, remember }: SignInFormData) {
+    const success = await signIn({ email, password, rememberMe: remember });
 
     if (success) {
       navigate("/dashboard");
