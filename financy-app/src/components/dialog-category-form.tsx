@@ -1,4 +1,4 @@
-import { useMutation } from "@apollo/client/react";
+import { useLazyQuery, useMutation } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -14,6 +14,7 @@ import { categoryIcons } from "@/lib/category-icons";
 import { cn } from "@/lib/utils";
 import {
   CREATE_CATEGORY,
+  GET_CATEGORY,
   REFETCH_CATEGORIES,
   UPDATE_CATEGORY,
 } from "@/services";
@@ -50,22 +51,13 @@ const defaultValues: CategoryFormData = {
 };
 function DialogCategoryForm({
   children,
-  category,
+  categoryId,
 }: {
   children: React.ReactNode;
-  category?: Category;
+  categoryId?: string;
 }) {
-  const isEditing = Boolean(category);
+  const isEditing = Boolean(categoryId);
   const [open, setOpen] = React.useState(false);
-
-  const initialValues: CategoryFormData = category
-    ? {
-        name: category.name,
-        description: category.description,
-        icon: category.icon,
-        color: category.color,
-      }
-    : defaultValues;
 
   const {
     register,
@@ -75,8 +67,11 @@ function DialogCategoryForm({
     formState: { errors },
   } = useForm<CategoryFormData>({
     resolver: zodResolver(schema),
-    defaultValues: initialValues,
+    defaultValues,
   });
+
+  const [loadCategory, { loading: isLoadingCategory }] =
+    useLazyQuery(GET_CATEGORY);
 
   const mutationOptions = {
     refetchQueries: REFETCH_CATEGORIES,
@@ -104,19 +99,42 @@ function DialogCategoryForm({
   const isPending = isCreating || isUpdating;
 
   function onSubmit(data: CategoryFormData) {
-    if (category) {
-      updateCategory({ variables: { id: category.id, data } });
+    if (categoryId) {
+      updateCategory({ variables: { id: categoryId, data } });
       return;
     }
 
     createCategory({ variables: { data } });
   }
 
-  function handleOpenChange(next: boolean) {
+  async function handleOpenChange(next: boolean) {
     setOpen(next);
 
     if (!next) {
-      reset(initialValues);
+      reset(defaultValues);
+      return;
+    }
+
+    if (!categoryId) {
+      return;
+    }
+
+    const { data, error } = await loadCategory({
+      variables: { id: categoryId },
+    });
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    if (data) {
+      reset({
+        name: data.getCategory.name,
+        description: data.getCategory.description,
+        icon: data.getCategory.icon,
+        color: data.getCategory.color,
+      });
     }
   }
 
@@ -207,7 +225,11 @@ function DialogCategoryForm({
             )}
           />
 
-          <Button type="submit" className="w-full mt-2" disabled={isPending}>
+          <Button
+            type="submit"
+            className="w-full mt-2"
+            disabled={isPending || isLoadingCategory}
+          >
             {isPending ? "Salvando..." : "Salvar"}
           </Button>
         </form>

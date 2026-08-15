@@ -61,7 +61,11 @@ interface UpdateCategoryRequest {
 }
 
 interface CategoriesResponse {
-  getCategories: Category[];
+  listCategories: Category[];
+}
+
+interface CategoryResponse {
+  getCategory: Category;
 }
 
 interface CategoriesSummaryResponse {

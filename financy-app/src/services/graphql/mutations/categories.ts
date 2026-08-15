@@ -2,12 +2,12 @@ import { gql, type TypedDocumentNode } from "@apollo/client";
 
 import {
   CATEGORY_FRAGMENT,
-  GET_CATEGORIES,
+  LIST_CATEGORIES,
   GET_CATEGORIES_SUMMARY,
 } from "../queries/categories";
 
 export const REFETCH_CATEGORIES = [
-  { query: GET_CATEGORIES },
+  { query: LIST_CATEGORIES },
   { query: GET_CATEGORIES_SUMMARY },
 ];
 

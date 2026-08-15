@@ -12,11 +12,24 @@ export const CATEGORY_FRAGMENT = gql`
   }
 `;
 
-export const GET_CATEGORIES: TypedDocumentNode<CategoriesResponse> = gql`
+export const LIST_CATEGORIES: TypedDocumentNode<CategoriesResponse> = gql`
   ${CATEGORY_FRAGMENT}
 
-  query GetCategories {
-    getCategories {
+  query ListCategories {
+    listCategories {
+      ...CategoryFields
+    }
+  }
+`;
+
+export const GET_CATEGORY: TypedDocumentNode<
+  CategoryResponse,
+  { id: string }
+> = gql`
+  ${CATEGORY_FRAGMENT}
+
+  query GetCategory($id: String!) {
+    getCategory(id: $id) {
       ...CategoryFields
     }
   }

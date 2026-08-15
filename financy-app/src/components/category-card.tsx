@@ -35,7 +35,7 @@ function CategoryCard({
             <Trash />
           </IconButton>
 
-          <DialogCategoryForm category={category}>
+          <DialogCategoryForm categoryId={category.id}>
             <IconButton aria-label={`Editar categoria ${category.name}`}>
               <SquarePen />
             </IconButton>

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { InputField } from "@/components/ui/input-field";
 import { SelectField } from "@/components/ui/select-field";
-import { GET_CATEGORIES, useCreateTransaction } from "@/services";
+import { LIST_CATEGORIES, useCreateTransaction } from "@/services";
 
 const types = [
   {
@@ -61,8 +61,8 @@ function parseCurrency(value: string) {
 }
 
 function DialogCreateTransaction({ children }: { children: React.ReactNode }) {
-  const { data: categoriesData } = useQuery(GET_CATEGORIES);
-  const categories = categoriesData?.getCategories;
+  const { data: categoriesData } = useQuery(LIST_CATEGORIES);
+  const categories = categoriesData?.listCategories;
   const { mutate: createTransaction, isPending } = useCreateTransaction();
   const [open, setOpen] = React.useState(false);
 

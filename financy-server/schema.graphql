@@ -53,10 +53,10 @@ type Mutation {
 }
 
 type Query {
-  getCategories: [CategoryModel!]!
   getCategoriesSummary: CategoriesSummaryModel!
   getCategory(id: String!): CategoryModel!
   getUser(id: String!): UserModel!
+  listCategories: [CategoryModel!]!
 }
 
 input RegisterInput {

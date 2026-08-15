@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  GET_CATEGORIES,
+  LIST_CATEGORIES,
   useDeleteTransaction,
   useTransactionPeriods,
   useTransactions,
@@ -41,8 +41,8 @@ function Transactions() {
   const [period, setPeriod] = React.useState("");
   const [page, setPage] = React.useState(1);
 
-  const { data: categoriesData } = useQuery(GET_CATEGORIES);
-  const categories = categoriesData?.getCategories;
+  const { data: categoriesData } = useQuery(LIST_CATEGORIES);
+  const categories = categoriesData?.listCategories;
   const { data: periods } = useTransactionPeriods();
   const { data, isLoading } = useTransactions({
     page,

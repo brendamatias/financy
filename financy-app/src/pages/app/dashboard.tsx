@@ -19,7 +19,7 @@ import { Tag } from "@/components/ui/tag";
 import { getCategoryIcon } from "@/lib/category-icons";
 import { formatCurrency, formatDate, formatSignedCurrency } from "@/lib/format";
 import {
-  GET_CATEGORIES,
+  LIST_CATEGORIES,
   useDashboardSummary,
   useTransactions,
 } from "@/services";
@@ -54,8 +54,8 @@ function Dashboard() {
   const { data: transactions, isLoading: isLoadingTransactions } =
     useTransactions({ page: 1, pageSize: RECENT_TRANSACTIONS });
   const { data: categoriesData, loading: isLoadingCategories } =
-    useQuery(GET_CATEGORIES);
-  const categories = categoriesData?.getCategories;
+    useQuery(LIST_CATEGORIES);
+  const categories = categoriesData?.listCategories;
 
   const summaryCards = [
     {

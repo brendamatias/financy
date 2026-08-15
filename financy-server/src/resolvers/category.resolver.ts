@@ -27,7 +27,7 @@ export class CategoryResolver {
   private userService = new UserService();
 
   @Query(() => [CategoryModel])
-  async getCategories(@GqlUser() user: User): Promise<CategoryModel[]> {
+  async listCategories(@GqlUser() user: User): Promise<CategoryModel[]> {
     return this.categoryService.listCategories(user.id);
   }
 

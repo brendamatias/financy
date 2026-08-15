@@ -9,13 +9,32 @@ function withTypename(category: Category) {
 }
 
 export const categoryHandlers = [
-  api.query<CategoriesResponse>("GetCategories", async () => {
+  api.query<CategoriesResponse>("ListCategories", async () => {
     await delay(300);
 
     return HttpResponse.json({
-      data: { getCategories: db.categories.map(withTypename) },
+      data: { listCategories: db.categories.map(withTypename) },
     });
   }),
+
+  api.query<CategoryResponse, { id: string }>(
+    "GetCategory",
+    async ({ variables }) => {
+      await delay(300);
+
+      const category = db.categories.find((item) => item.id === variables.id);
+
+      if (!category) {
+        return HttpResponse.json({
+          errors: [{ message: "Categoria não encontrada!" }],
+        });
+      }
+
+      return HttpResponse.json({
+        data: { getCategory: withTypename(category) },
+      });
+    },
+  ),
 
   api.query<CategoriesSummaryResponse>("GetCategoriesSummary", async () => {
     await delay(300);

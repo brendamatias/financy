@@ -6,16 +6,16 @@ import { Button } from "@/components/ui/button";
 import { db } from "@/mocks/data";
 import { renderWithRouter } from "@/tests/render";
 
-function renderDialog(category?: Category) {
+function renderDialog(categoryId?: string) {
   return renderWithRouter(
-    <DialogCategoryForm category={category}>
+    <DialogCategoryForm categoryId={categoryId}>
       <Button>Abrir</Button>
     </DialogCategoryForm>,
   );
 }
 
-async function openDialog(category?: Category) {
-  const { user } = renderDialog(category);
+async function openDialog(categoryId?: string) {
+  const { user } = renderDialog(categoryId);
 
   await user.click(screen.getByRole("button", { name: "Abrir" }));
 
@@ -64,10 +64,14 @@ describe("DialogCategoryForm", () => {
   it("prefills the form when editing", async () => {
     const category = db.categories[0];
 
-    await openDialog(category);
+    await openDialog(category.id);
 
     expect(await screen.findByText("Editar categoria")).toBeVisible();
-    expect(screen.getByLabelText("Título")).toHaveValue(category.name);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Título")).toHaveValue(category.name),
+    );
+
     expect(screen.getByLabelText("Descrição")).toHaveValue(
       category.description,
     );
@@ -75,9 +79,11 @@ describe("DialogCategoryForm", () => {
 
   it("updates the category", async () => {
     const category = db.categories[0];
-    const { user } = await openDialog(category);
+    const { user } = await openDialog(category.id);
 
     const title = await screen.findByLabelText("Título");
+
+    await waitFor(() => expect(title).toHaveValue(category.name));
 
     await user.clear(title);
     await user.type(title, "Alimentação e bebidas");

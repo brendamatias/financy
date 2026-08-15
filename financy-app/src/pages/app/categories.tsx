@@ -10,13 +10,13 @@ import { Button } from "@/components/ui/button";
 import { getCategoryIcon } from "@/lib/category-icons";
 import {
   DELETE_CATEGORY,
-  GET_CATEGORIES,
+  LIST_CATEGORIES,
   GET_CATEGORIES_SUMMARY,
   REFETCH_CATEGORIES,
 } from "@/services";
 
 function Categories() {
-  const { data, loading: isLoading } = useQuery(GET_CATEGORIES);
+  const { data, loading: isLoading } = useQuery(LIST_CATEGORIES);
   const { data: summaryData, loading: isLoadingSummary } = useQuery(
     GET_CATEGORIES_SUMMARY,
   );
@@ -30,7 +30,7 @@ function Categories() {
     },
   );
 
-  const categories = data?.getCategories;
+  const categories = data?.listCategories;
   const summary = summaryData?.getCategoriesSummary;
 
   const mostUsedIcon = summary?.mostUsed
