@@ -1,11 +1,14 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { prismaClient } from "../../prisma/prisma";
-import { AuthService } from "./auth.service";
+import {
+  createCategory,
+  createTransaction,
+  createUser,
+} from "../tests/factories";
 import { CategoryService } from "./category.service";
 import { TransactionService } from "./transaction.service";
 
-const authService = new AuthService();
 const categoryService = new CategoryService();
 const transactionService = new TransactionService();
 
@@ -14,74 +17,52 @@ let otherUserId: string;
 let foodId: string;
 let transportId: string;
 
-async function createTransaction(data: {
-  description: string;
-  amount: number;
-  type: string;
-  date: string;
-  categoryId: string;
-  userId: string;
-}) {
-  return prismaClient.transaction.create({
-    data: { ...data, date: new Date(`${data.date}T00:00:00.000Z`) },
-  });
-}
-
 beforeEach(async () => {
-  const owner = await authService.register({
-    name: "Conta Teste",
-    email: "conta@teste.com",
-    password: "12345678",
-  });
-
-  const other = await authService.register({
+  const owner = await createUser();
+  const other = await createUser({
     name: "Outra Conta",
     email: "outra@teste.com",
-    password: "12345678",
   });
 
-  userId = owner.user.id;
-  otherUserId = other.user.id;
+  userId = owner.id;
+  otherUserId = other.id;
 
-  const food = await categoryService.createCategory(
-    { name: "Alimentação", description: "", color: "blue", icon: "food" },
-    userId,
-  );
-
-  const transport = await categoryService.createCategory(
-    { name: "Transporte", description: "", color: "purple", icon: "car" },
-    userId,
-  );
+  const food = await createCategory(userId);
+  const transport = await createCategory(userId, {
+    name: "Transporte",
+    color: "purple",
+    icon: "car",
+  });
 
   foodId = food.id;
   transportId = transport.id;
 
   await createTransaction({
-    description: "Jantar no restaurante",
-    amount: 89.5,
-    type: "expense",
-    date: "2025-11-30",
-    categoryId: foodId,
-    userId,
-  });
+      userId,
+      categoryId: foodId,
+      description: "Jantar no restaurante",
+      amount: 89.5,
+      type: "expense",
+      date: "2025-11-30",
+    });
 
   await createTransaction({
-    description: "Uber para o trabalho",
-    amount: 32.4,
-    type: "expense",
-    date: "2025-11-12",
-    categoryId: transportId,
-    userId,
-  });
+      userId,
+      categoryId: transportId,
+      description: "Uber para o trabalho",
+      amount: 32.4,
+      type: "expense",
+      date: "2025-11-12",
+    });
 
   await createTransaction({
-    description: "Pagamento de salário",
-    amount: 4250,
-    type: "income",
-    date: "2025-12-01",
-    categoryId: foodId,
-    userId,
-  });
+      userId,
+      categoryId: foodId,
+      description: "Pagamento de salário",
+      amount: 4250,
+      type: "income",
+      date: "2025-12-01",
+    });
 });
 
 describe("TransactionService.listTransactions", () => {
@@ -99,12 +80,12 @@ describe("TransactionService.listTransactions", () => {
     );
 
     await createTransaction({
+      userId: otherUserId,
+      categoryId: category.id,
       description: "Compras",
       amount: 100,
       type: "expense",
       date: "2025-11-20",
-      categoryId: category.id,
-      userId: otherUserId,
     });
 
     const result = await transactionService.listTransactions({}, userId);

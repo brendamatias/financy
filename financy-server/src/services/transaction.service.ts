@@ -10,16 +10,8 @@ import {
   transactionIdSchema,
   updateTransactionSchema,
 } from "../schemas/transaction.schema";
+import { periodToRange } from "../utils/period";
 import { validate } from "../utils/validate";
-
-function periodToRange(period: string) {
-  const [month, year] = period.split("/").map(Number);
-
-  return {
-    gte: new Date(Date.UTC(year, month - 1, 1)),
-    lt: new Date(Date.UTC(year, month, 1)),
-  };
-}
 
 export class TransactionService {
   async listTransactions(input: ListTransactionsInput, userId: string) {

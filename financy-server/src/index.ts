@@ -9,6 +9,7 @@ import { UserResolver } from "./resolvers/user.resolver";
 import { AuthResolver } from "./resolvers/auth.resolver";
 import { CategoryResolver } from "./resolvers/category.resolver";
 import { TransactionResolver } from "./resolvers/transaction.resolver";
+import { DashboardResolver } from "./resolvers/dashboard.resolver";
 
 async function main() {
   const app = express();
@@ -26,6 +27,7 @@ async function main() {
       UserResolver,
       CategoryResolver,
       TransactionResolver,
+      DashboardResolver,
     ],
     validate: false,
     emitSchemaFile: "./schema.graphql",
