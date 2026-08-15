@@ -1,7 +1,7 @@
 services:
   server:
     build:
-      context: ./financy-server
+      context: ./backend
       target: runtime
     environment:
       DATABASE_URL: file:/app/data/financy.db
@@ -29,7 +29,7 @@ services:
 
   app:
     build:
-      context: ./financy-app
+      context: ./frontend
       target: runtime
       args:
         VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:4000/graphql}
