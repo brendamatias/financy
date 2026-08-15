@@ -13,7 +13,7 @@ import {
   LIST_CATEGORIES,
   GET_CATEGORIES_SUMMARY,
   REFETCH_CATEGORIES,
-} from "@/services";
+} from "@/lib/graphql";
 
 function Categories() {
   const { data, loading: isLoading } = useQuery(LIST_CATEGORIES);

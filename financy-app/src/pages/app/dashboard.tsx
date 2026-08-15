@@ -24,7 +24,7 @@ import {
   GET_DASHBOARD_SUMMARY,
   LIST_CATEGORIES,
   LIST_TRANSACTIONS,
-} from "@/services";
+} from "@/lib/graphql";
 
 const RECENT_TRANSACTIONS = 5;
 const RECENT_CATEGORIES = 5;

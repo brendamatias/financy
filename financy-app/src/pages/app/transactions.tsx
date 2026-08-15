@@ -28,7 +28,7 @@ import {
   LIST_TRANSACTIONS,
   LIST_TRANSACTION_PERIODS,
   REFETCH_TRANSACTIONS,
-} from "@/services";
+} from "@/lib/graphql";
 
 const PAGE_SIZE = 10;
 

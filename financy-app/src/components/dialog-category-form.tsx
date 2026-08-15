@@ -17,7 +17,7 @@ import {
   GET_CATEGORY,
   REFETCH_CATEGORIES,
   UPDATE_CATEGORY,
-} from "@/services";
+} from "@/lib/graphql";
 
 const icons = Object.entries(categoryIcons) as [
   CategoryIconName,

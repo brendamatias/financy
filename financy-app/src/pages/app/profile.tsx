@@ -12,7 +12,7 @@ import { Card } from "@/components/ui/card";
 import { InputField } from "@/components/ui/input-field";
 import { Separator } from "@/components/ui/separator";
 import { getInitials } from "@/lib/initials";
-import { UPDATE_ME } from "@/services";
+import { UPDATE_ME } from "@/lib/graphql";
 import { useAuthStore } from "@/stores/auth";
 
 const schema = z.object({

@@ -16,7 +16,7 @@ import {
   CREATE_TRANSACTION,
   LIST_CATEGORIES,
   REFETCH_TRANSACTIONS,
-} from "@/services";
+} from "@/lib/graphql";
 
 const types = [
   {

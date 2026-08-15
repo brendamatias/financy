@@ -6,7 +6,7 @@ import { RouterProvider } from "react-router-dom";
 
 import "./index.css";
 import { enableMocking } from "./mocks/browser";
-import { apolloClient } from "./services/apollo";
+import { apolloClient } from "./lib/graphql";
 import { router } from "./routes";
 
 enableMocking().then(() => {

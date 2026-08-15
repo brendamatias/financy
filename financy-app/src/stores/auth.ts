@@ -3,11 +3,11 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import {
+  apolloClient,
   LOGIN_MUTATION,
   REFRESH_TOKEN_MUTATION,
   REGISTER_MUTATION,
-} from "@/services/graphql/mutations/auth";
-import { apolloClient } from "@/services/apollo";
+} from "@/lib/graphql";
 
 interface AuthState {
   token: string | null;

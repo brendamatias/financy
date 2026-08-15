@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { Toaster } from "react-hot-toast";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
-import { apolloClient } from "@/services/apollo";
+import { apolloClient } from "@/lib/graphql";
 
 export function renderWithRouter(
   element: React.ReactNode,

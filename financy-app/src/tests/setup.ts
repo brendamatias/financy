@@ -10,7 +10,7 @@ import { dashboardHandlers } from "@/mocks/api/dashboard";
 import { transactionHandlers } from "@/mocks/api/transaction";
 import { userHandlers } from "@/mocks/api/user";
 import { resetDb } from "@/mocks/data";
-import { apolloClient } from "@/services/apollo";
+import { apolloClient } from "@/lib/graphql";
 import { useAuthStore } from "@/stores/auth";
 
 export const server = setupServer(
