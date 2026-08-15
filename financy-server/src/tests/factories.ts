@@ -1,4 +1,9 @@
 import { prismaClient } from "../../prisma/prisma";
+import type {
+  CategoryColor,
+  CategoryIcon,
+  TransactionType,
+} from "../generated/prisma/enums";
 import { AuthService } from "../services/auth.service";
 import { CategoryService } from "../services/category.service";
 
@@ -23,8 +28,8 @@ export async function createCategory(
   overrides: Partial<{
     name: string;
     description: string;
-    color: string;
-    icon: string;
+    color: CategoryColor;
+    icon: CategoryIcon;
   }> = {},
 ) {
   return categoryService.createCategory(
@@ -44,14 +49,14 @@ export async function createTransaction({
   categoryId,
   description = "Transação",
   amount = 100,
-  type = "expense",
+  type = "expense" as TransactionType,
   date = "2025-11-10",
 }: {
   userId: string;
   categoryId: string;
   description?: string;
   amount?: number;
-  type?: string;
+  type?: TransactionType;
   date?: string | Date;
 }) {
   return prismaClient.transaction.create({

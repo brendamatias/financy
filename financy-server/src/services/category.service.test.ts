@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { prismaClient } from "../../prisma/prisma";
+import { CreateCategoryInput } from "../dtos/input/category.input";
+import type { CategoryColor, CategoryIcon } from "../generated/prisma/enums";
 import { createTransaction, createUser } from "../tests/factories";
 import { CategoryService } from "./category.service";
 
 const categoryService = new CategoryService();
 
-const validCategory = {
+const validCategory: CreateCategoryInput = {
   name: "Alimentação",
   description: "Restaurantes e delivery",
   color: "blue",
@@ -41,7 +43,7 @@ describe("CategoryService.createCategory", () => {
   it("rejects an invalid color", async () => {
     await expect(
       categoryService.createCategory(
-        { ...validCategory, color: "roxo" },
+        { ...validCategory, color: "roxo" as CategoryColor },
         userId,
       ),
     ).rejects.toThrow("Selecione uma cor válida");
@@ -50,7 +52,7 @@ describe("CategoryService.createCategory", () => {
   it("rejects an invalid icon", async () => {
     await expect(
       categoryService.createCategory(
-        { ...validCategory, icon: "foguete" },
+        { ...validCategory, icon: "foguete" as CategoryIcon },
         userId,
       ),
     ).rejects.toThrow("Selecione um ícone válido");
@@ -92,8 +94,16 @@ describe("CategoryService category stats", () => {
       userId,
     );
 
-    await createTransaction({ userId: userId, categoryId: category.id, amount: 89.5 });
-    await createTransaction({ userId: userId, categoryId: category.id, amount: 10.5 });
+    await createTransaction({
+      userId: userId,
+      categoryId: category.id,
+      amount: 89.5,
+    });
+    await createTransaction({
+      userId: userId,
+      categoryId: category.id,
+      amount: 10.5,
+    });
 
     const [result] = await categoryService.listCategories(userId);
 
@@ -119,7 +129,11 @@ describe("CategoryService category stats", () => {
       userId,
     );
 
-    await createTransaction({ userId: userId, categoryId: category.id, amount: 25 });
+    await createTransaction({
+      userId: userId,
+      categoryId: category.id,
+      amount: 25,
+    });
 
     const result = await categoryService.findCategory(category.id, userId);
 
@@ -218,7 +232,11 @@ describe("CategoryService.deleteCategory", () => {
       userId,
     );
 
-    await createTransaction({ userId: userId, categoryId: category.id, amount: 50 });
+    await createTransaction({
+      userId: userId,
+      categoryId: category.id,
+      amount: 50,
+    });
 
     await expect(
       categoryService.deleteCategory(category.id, userId),
@@ -255,8 +273,16 @@ describe("CategoryService.getCategoriesSummary", () => {
       userId,
     );
 
-    await createTransaction({ userId: userId, categoryId: category.id, amount: 10 });
-    await createTransaction({ userId: userId, categoryId: category.id, amount: 20 });
+    await createTransaction({
+      userId: userId,
+      categoryId: category.id,
+      amount: 10,
+    });
+    await createTransaction({
+      userId: userId,
+      categoryId: category.id,
+      amount: 20,
+    });
 
     const summary = await categoryService.getCategoriesSummary(userId);
 
@@ -270,9 +296,21 @@ describe("CategoryService.getCategoriesSummary", () => {
       userId,
     );
 
-    await createTransaction({ userId: userId, categoryId: food.id, amount: 10 });
-    await createTransaction({ userId: userId, categoryId: transport.id, amount: 10 });
-    await createTransaction({ userId: userId, categoryId: transport.id, amount: 10 });
+    await createTransaction({
+      userId: userId,
+      categoryId: food.id,
+      amount: 10,
+    });
+    await createTransaction({
+      userId: userId,
+      categoryId: transport.id,
+      amount: 10,
+    });
+    await createTransaction({
+      userId: userId,
+      categoryId: transport.id,
+      amount: 10,
+    });
 
     const summary = await categoryService.getCategoriesSummary(userId);
 

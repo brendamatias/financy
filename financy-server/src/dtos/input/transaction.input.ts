@@ -1,5 +1,7 @@
 import { Field, Float, InputType, Int } from "type-graphql";
 
+import { TransactionType } from "../../graphql/enums";
+
 @InputType()
 export class CreateTransactionInput {
   @Field(() => String)
@@ -8,8 +10,8 @@ export class CreateTransactionInput {
   @Field(() => Float)
   amount!: number;
 
-  @Field(() => String)
-  type!: string;
+  @Field(() => TransactionType)
+  type!: TransactionType;
 
   @Field(() => String)
   date!: string;
@@ -26,8 +28,8 @@ export class UpdateTransactionInput {
   @Field(() => Float, { nullable: true })
   amount?: number;
 
-  @Field(() => String, { nullable: true })
-  type?: string;
+  @Field(() => TransactionType, { nullable: true })
+  type?: TransactionType;
 
   @Field(() => String, { nullable: true })
   date?: string;

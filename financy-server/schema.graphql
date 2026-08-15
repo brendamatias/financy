@@ -9,11 +9,43 @@ type CategoriesSummaryModel {
   transactionsCount: Int!
 }
 
+"""Cores disponíveis para uma categoria"""
+enum CategoryColor {
+  blue
+  green
+  orange
+  pink
+  purple
+  red
+  yellow
+}
+
+"""Ícones disponíveis para uma categoria"""
+enum CategoryIcon {
+  bag
+  basket
+  bill
+  briefcase
+  car
+  card
+  cleaning
+  education
+  energy
+  entertainment
+  food
+  gift
+  gym
+  health
+  house
+  investment
+  market
+}
+
 type CategoryModel {
-  color: String!
+  color: CategoryColor!
   createdAt: DateTimeISO!
   description: String
-  icon: String!
+  icon: CategoryIcon!
   id: ID!
   name: String!
   total: Float!
@@ -24,9 +56,9 @@ type CategoryModel {
 }
 
 input CreateCategoryInput {
-  color: String!
+  color: CategoryColor!
   description: String
-  icon: String!
+  icon: CategoryIcon!
   name: String!
 }
 
@@ -35,7 +67,7 @@ input CreateTransactionInput {
   categoryId: String!
   date: String!
   description: String!
-  type: String!
+  type: TransactionType!
 }
 
 input DashboardSummaryInput {
@@ -125,8 +157,8 @@ type RegisterOutput {
 }
 
 type TransactionCategoryModel {
-  color: String!
-  icon: String!
+  color: CategoryColor!
+  icon: CategoryIcon!
   id: ID!
   name: String!
 }
@@ -139,16 +171,22 @@ type TransactionModel {
   date: DateTimeISO!
   description: String!
   id: ID!
-  type: String!
+  type: TransactionType!
   updatedAt: DateTimeISO!
   user: UserModel
   userId: String!
 }
 
+"""Entrada ou saída"""
+enum TransactionType {
+  expense
+  income
+}
+
 input UpdateCategoryInput {
-  color: String
+  color: CategoryColor
   description: String
-  icon: String
+  icon: CategoryIcon
   name: String
 }
 
@@ -157,7 +195,7 @@ input UpdateTransactionInput {
   categoryId: String
   date: String
   description: String
-  type: String
+  type: TransactionType
 }
 
 type UserModel {

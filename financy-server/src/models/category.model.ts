@@ -6,6 +6,7 @@ import {
   Int,
   ObjectType,
 } from "type-graphql";
+import { CategoryColor, CategoryIcon } from "../graphql/enums";
 import { UserModel } from "./user.model";
 
 @ObjectType()
@@ -19,11 +20,11 @@ export class CategoryModel {
   @Field(() => String, { nullable: true })
   description?: string;
 
-  @Field(() => String)
-  color!: string;
+  @Field(() => CategoryColor)
+  color!: CategoryColor;
 
-  @Field(() => String)
-  icon!: string;
+  @Field(() => CategoryIcon)
+  icon!: CategoryIcon;
 
   @Field(() => String)
   userId!: string;

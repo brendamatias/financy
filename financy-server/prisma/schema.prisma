@@ -24,16 +24,46 @@ model User {
   transactions Transaction[]
 }
 
+enum CategoryColor {
+  green
+  blue
+  purple
+  pink
+  red
+  orange
+  yellow
+}
+
+enum CategoryIcon {
+  briefcase
+  car
+  health
+  investment
+  market
+  entertainment
+  basket
+  food
+  cleaning
+  house
+  gift
+  gym
+  education
+  bag
+  card
+  bill
+  energy
+}
+
 model Category {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
-  description String   @default("")
-  color       String
-  icon        String
+  description String        @default("")
+  color       CategoryColor
+  icon        CategoryIcon
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   transactions Transaction[]
 
@@ -41,18 +71,23 @@ model Category {
   @@index([userId])
 }
 
+enum TransactionType {
+  income
+  expense
+}
+
 model Transaction {
-  id          String   @id @default(cuid())
+  id          String          @id @default(cuid())
   description String
   amount      Float
-  type        String
+  type        TransactionType
   date        DateTime
   categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  category    Category        @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   @@index([userId])
   @@index([userId, date])

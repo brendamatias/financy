@@ -1,34 +1,10 @@
 import { z } from "zod";
 
-export const CATEGORY_COLORS = [
-  "green",
-  "blue",
-  "purple",
-  "pink",
-  "red",
-  "orange",
-  "yellow",
-] as const;
+import { CategoryColor, CategoryIcon } from "../generated/prisma/enums";
 
-export const CATEGORY_ICONS = [
-  "briefcase",
-  "car",
-  "health",
-  "investment",
-  "market",
-  "entertainment",
-  "basket",
-  "food",
-  "cleaning",
-  "house",
-  "gift",
-  "gym",
-  "education",
-  "bag",
-  "card",
-  "bill",
-  "energy",
-] as const;
+export const CATEGORY_COLORS = Object.values(CategoryColor);
+
+export const CATEGORY_ICONS = Object.values(CategoryIcon);
 
 export const createCategorySchema = z.object({
   name: z.string().trim().min(1, "Informe o título da categoria"),

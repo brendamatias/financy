@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { prismaClient } from "../../prisma/prisma";
+import { CreateTransactionInput } from "../dtos/input/transaction.input";
+import type { TransactionType } from "../generated/prisma/enums";
 import {
   createCategory,
   createTransaction,
@@ -38,31 +40,31 @@ beforeEach(async () => {
   transportId = transport.id;
 
   await createTransaction({
-      userId,
-      categoryId: foodId,
-      description: "Jantar no restaurante",
-      amount: 89.5,
-      type: "expense",
-      date: "2025-11-30",
-    });
+    userId,
+    categoryId: foodId,
+    description: "Jantar no restaurante",
+    amount: 89.5,
+    type: "expense",
+    date: "2025-11-30",
+  });
 
   await createTransaction({
-      userId,
-      categoryId: transportId,
-      description: "Uber para o trabalho",
-      amount: 32.4,
-      type: "expense",
-      date: "2025-11-12",
-    });
+    userId,
+    categoryId: transportId,
+    description: "Uber para o trabalho",
+    amount: 32.4,
+    type: "expense",
+    date: "2025-11-12",
+  });
 
   await createTransaction({
-      userId,
-      categoryId: foodId,
-      description: "Pagamento de salário",
-      amount: 4250,
-      type: "income",
-      date: "2025-12-01",
-    });
+    userId,
+    categoryId: foodId,
+    description: "Pagamento de salário",
+    amount: 4250,
+    type: "income",
+    date: "2025-12-01",
+  });
 });
 
 describe("TransactionService.listTransactions", () => {
@@ -202,7 +204,10 @@ describe("TransactionService.listTransactions", () => {
 
   it("rejects an invalid type", async () => {
     await expect(
-      transactionService.listTransactions({ type: "outro" }, userId),
+      transactionService.listTransactions(
+        { type: "outro" as TransactionType },
+        userId,
+      ),
     ).rejects.toThrow();
   });
 });
@@ -230,7 +235,7 @@ function toLocalISODate(date: Date) {
 }
 
 describe("TransactionService.createTransaction", () => {
-  const base = {
+  const base: Omit<CreateTransactionInput, "date"> = {
     description: "Almoço",
     amount: 42.5,
     type: "expense",

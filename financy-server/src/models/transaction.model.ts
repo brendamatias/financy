@@ -1,4 +1,9 @@
 import { Field, Float, GraphQLISODateTime, ID, ObjectType } from "type-graphql";
+import {
+  CategoryColor,
+  CategoryIcon,
+  TransactionType,
+} from "../graphql/enums";
 import { UserModel } from "./user.model";
 
 @ObjectType()
@@ -9,11 +14,11 @@ export class TransactionCategoryModel {
   @Field(() => String)
   name!: string;
 
-  @Field(() => String)
-  color!: string;
+  @Field(() => CategoryColor)
+  color!: CategoryColor;
 
-  @Field(() => String)
-  icon!: string;
+  @Field(() => CategoryIcon)
+  icon!: CategoryIcon;
 }
 
 @ObjectType()
@@ -27,8 +32,8 @@ export class TransactionModel {
   @Field(() => Float)
   amount!: number;
 
-  @Field(() => String)
-  type!: string;
+  @Field(() => TransactionType)
+  type!: TransactionType;
 
   @Field(() => GraphQLISODateTime)
   date!: Date;

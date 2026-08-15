@@ -1,8 +1,9 @@
 import { z } from "zod";
 
+import { TransactionType } from "../generated/prisma/enums";
 import { isRealDate } from "../utils/period";
 
-export const TRANSACTION_TYPES = ["income", "expense"] as const;
+export const TRANSACTION_TYPES = Object.values(TransactionType);
 
 const PERIOD_REGEX = /^(0[1-9]|1[0-2])\/\d{4}$/;
 const DATE_REGEX = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
