@@ -283,6 +283,40 @@ describe("TransactionService.createTransaction", () => {
     ).rejects.toThrow("Categoria não encontrada!");
   });
 
+  it("rejects a date that does not exist in the calendar", async () => {
+    await expect(
+      transactionService.createTransaction(
+        { ...base, categoryId: foodId, date: "2025-02-31" },
+        userId,
+      ),
+    ).rejects.toThrow("Informe uma data que exista no calendário");
+
+    await expect(
+      transactionService.createTransaction(
+        { ...base, categoryId: foodId, date: "2025-04-31" },
+        userId,
+      ),
+    ).rejects.toThrow("Informe uma data que exista no calendário");
+  });
+
+  it("accepts february 29 on a leap year", async () => {
+    const transaction = await transactionService.createTransaction(
+      { ...base, categoryId: foodId, date: "2024-02-29" },
+      userId,
+    );
+
+    expect(transaction.date.toISOString()).toBe("2024-02-29T00:00:00.000Z");
+  });
+
+  it("rejects a malformed date", async () => {
+    await expect(
+      transactionService.createTransaction(
+        { ...base, categoryId: foodId, date: "31/12/2025" },
+        userId,
+      ),
+    ).rejects.toThrow("Informe uma data válida no formato AAAA-MM-DD");
+  });
+
   it("rejects an amount of zero or less", async () => {
     await expect(
       transactionService.createTransaction(

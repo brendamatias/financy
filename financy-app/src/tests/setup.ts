@@ -6,6 +6,7 @@ import { afterAll, afterEach, beforeAll } from "vitest";
 
 import { authHandlers } from "@/mocks/api/auth";
 import { categoryHandlers } from "@/mocks/api/category";
+import { dashboardHandlers } from "@/mocks/api/dashboard";
 import { transactionHandlers } from "@/mocks/api/transaction";
 import { resetDb } from "@/mocks/data";
 import { apolloClient } from "@/services/apollo";
@@ -14,6 +15,7 @@ import { useAuthStore } from "@/stores/auth";
 export const server = setupServer(
   ...authHandlers,
   ...categoryHandlers,
+  ...dashboardHandlers,
   ...transactionHandlers,
 );
 

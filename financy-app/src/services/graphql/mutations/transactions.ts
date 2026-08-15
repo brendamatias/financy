@@ -6,6 +6,7 @@ export const REFETCH_TRANSACTIONS = [
   "ListTransactions",
   "ListTransactionPeriods",
   "GetCategoriesSummary",
+  "GetDashboardSummary",
 ];
 
 export const CREATE_TRANSACTION: TypedDocumentNode<

@@ -21,9 +21,9 @@ import { Tag } from "@/components/ui/tag";
 import { getCategoryIcon } from "@/lib/category-icons";
 import { formatCurrency, formatDate, formatSignedCurrency } from "@/lib/format";
 import {
+  GET_DASHBOARD_SUMMARY,
   LIST_CATEGORIES,
   LIST_TRANSACTIONS,
-  useDashboardSummary,
 } from "@/services";
 
 const RECENT_TRANSACTIONS = 5;
@@ -53,7 +53,10 @@ function SectionHeader({
 }
 
 function Dashboard() {
-  const { data: summary, isLoading: isLoadingSummary } = useDashboardSummary();
+  const { data: summaryData, loading: isLoadingSummary } = useQuery(
+    GET_DASHBOARD_SUMMARY,
+  );
+  const summary = summaryData?.getDashboardSummary;
   const { data: transactionsData, loading: isLoadingTransactions } = useQuery(
     LIST_TRANSACTIONS,
     { variables: { data: { page: 1, pageSize: RECENT_TRANSACTIONS } } },

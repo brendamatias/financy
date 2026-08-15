@@ -1,16 +1,11 @@
 import { HttpResponse, delay, graphql } from "msw";
 
 import { categoryRef, db } from "@/mocks/data";
+import { toPeriod } from "@/mocks/utils";
 
 const api = graphql.link(import.meta.env.VITE_GRAPHQL_URL);
 
 const DEFAULT_PAGE_SIZE = 10;
-
-function toPeriod(date: string) {
-  const [year, month] = date.split("-");
-
-  return `${month}/${year}`;
-}
 
 function withTypename(transaction: Transaction) {
   return {

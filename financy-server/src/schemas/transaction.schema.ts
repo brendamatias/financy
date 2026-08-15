@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isRealDate } from "../utils/period";
+
 export const TRANSACTION_TYPES = ["income", "expense"] as const;
 
 const PERIOD_REGEX = /^(0[1-9]|1[0-2])\/\d{4}$/;
@@ -31,6 +33,7 @@ export const createTransactionSchema = z.object({
     .string()
     .trim()
     .regex(DATE_REGEX, "Informe uma data válida no formato AAAA-MM-DD")
+    .refine(isRealDate, "Informe uma data que exista no calendário")
     .refine(isNotInTheFuture, "A data não pode ser no futuro"),
   categoryId: z.string().trim().min(1, "Selecione uma categoria"),
 });

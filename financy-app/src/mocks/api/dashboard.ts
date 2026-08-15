@@ -1,23 +1,35 @@
-import { HttpResponse, delay, http } from "msw";
+import { HttpResponse, delay, graphql } from "msw";
 
 import { db } from "@/mocks/data";
+import { toPeriod } from "@/mocks/utils";
+
+const api = graphql.link(import.meta.env.VITE_GRAPHQL_URL);
+
+function sum(type: TransactionType, period?: string) {
+  return db.transactions
+    .filter((transaction) => transaction.type === type)
+    .filter((transaction) => !period || toPeriod(transaction.date) === period)
+    .reduce((total, transaction) => total + transaction.amount, 0);
+}
 
 export const dashboardHandlers = [
-  http.get("/api/dashboard/summary", async () => {
-    await delay(300);
+  api.query<DashboardSummaryResponse, { data?: DashboardSummaryFilters }>(
+    "GetDashboardSummary",
+    async ({ variables }) => {
+      await delay(300);
 
-    const income = db.transactions
-      .filter((transaction) => transaction.type === "income")
-      .reduce((total, transaction) => total + transaction.amount, 0);
+      const period = variables.data?.period;
 
-    const expenses = db.transactions
-      .filter((transaction) => transaction.type === "expense")
-      .reduce((total, transaction) => total + transaction.amount, 0);
-
-    return HttpResponse.json({
-      balance: income - expenses,
-      income,
-      expenses,
-    } satisfies DashboardSummary);
-  }),
+      return HttpResponse.json({
+        data: {
+          getDashboardSummary: {
+            __typename: "DashboardSummaryModel",
+            balance: sum("income") - sum("expense"),
+            income: sum("income", period),
+            expenses: sum("expense", period),
+          },
+        },
+      });
+    },
+  ),
 ];
