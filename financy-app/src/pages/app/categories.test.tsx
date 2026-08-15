@@ -37,6 +37,27 @@ describe("Categories page", () => {
     expect(await screen.findByText("Nenhuma categoria por aqui")).toBeVisible();
   });
 
+  it("asks for confirmation before deleting", async () => {
+    const target = db.categories[0];
+    const { user } = renderPage();
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: `Excluir categoria ${target.name}`,
+      }),
+    );
+
+    expect(await screen.findByText("Excluir categoria")).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
+
+    await waitFor(() =>
+      expect(screen.queryByText("Excluir categoria")).toBeNull(),
+    );
+
+    expect(screen.getByText(target.description)).toBeVisible();
+  });
+
   it("deletes a category", async () => {
     const target = db.categories[0];
     const { user } = renderPage();
@@ -46,6 +67,10 @@ describe("Categories page", () => {
     });
 
     await user.click(deleteButton);
+
+    await user.click(
+      await screen.findByRole("button", { name: /^Excluir$/ }),
+    );
 
     await waitFor(() =>
       expect(document.body).toHaveTextContent(

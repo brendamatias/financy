@@ -1,6 +1,7 @@
 import { SquarePen, Trash } from "lucide-react";
 
 import { CategoryIcon } from "@/components/category-icon";
+import { DialogConfirmDelete } from "@/components/dialog-confirm-delete";
 import { IconButton } from "@/components/ui/icon-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -58,14 +59,19 @@ function TransactionRow({
 
       <TableCell>
         <div className="flex justify-end gap-2">
-          <IconButton
-            variant="danger"
-            disabled={isDeleting}
-            onClick={() => onDelete?.(transaction.id)}
-            aria-label={`Excluir ${transaction.description}`}
+          <DialogConfirmDelete
+            title="Excluir transação"
+            description={`Tem certeza que deseja excluir "${transaction.description}"? Essa ação não pode ser desfeita.`}
+            isPending={isDeleting}
+            onConfirm={() => onDelete?.(transaction.id)}
           >
-            <Trash />
-          </IconButton>
+            <IconButton
+              variant="danger"
+              aria-label={`Excluir ${transaction.description}`}
+            >
+              <Trash />
+            </IconButton>
+          </DialogConfirmDelete>
 
           <IconButton aria-label={`Editar ${transaction.description}`}>
             <SquarePen />

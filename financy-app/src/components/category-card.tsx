@@ -2,6 +2,7 @@ import { SquarePen, Trash } from "lucide-react";
 
 import { CategoryIcon } from "@/components/category-icon";
 import { DialogCategoryForm } from "@/components/dialog-category-form";
+import { DialogConfirmDelete } from "@/components/dialog-confirm-delete";
 import { Card } from "@/components/ui/card";
 import { IconButton } from "@/components/ui/icon-button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,14 +27,19 @@ function CategoryCard({
         />
 
         <div className="flex items-center gap-2">
-          <IconButton
-            variant="danger"
-            disabled={isDeleting}
-            onClick={() => onDelete?.(category.id)}
-            aria-label={`Excluir categoria ${category.name}`}
+          <DialogConfirmDelete
+            title="Excluir categoria"
+            description={`Tem certeza que deseja excluir a categoria "${category.name}"? Essa ação não pode ser desfeita.`}
+            isPending={isDeleting}
+            onConfirm={() => onDelete?.(category.id)}
           >
-            <Trash />
-          </IconButton>
+            <IconButton
+              variant="danger"
+              aria-label={`Excluir categoria ${category.name}`}
+            >
+              <Trash />
+            </IconButton>
+          </DialogConfirmDelete>
 
           <DialogCategoryForm categoryId={category.id}>
             <IconButton aria-label={`Editar categoria ${category.name}`}>

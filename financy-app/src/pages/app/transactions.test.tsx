@@ -57,6 +57,10 @@ describe("Transactions page", () => {
 
     await user.click(deleteButton);
 
+    await user.click(
+      await screen.findByRole("button", { name: /^Excluir$/ }),
+    );
+
     await waitFor(() =>
       expect(document.body).toHaveTextContent(
         "Transação excluída com sucesso.",
