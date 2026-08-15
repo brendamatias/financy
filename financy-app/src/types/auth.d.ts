@@ -38,3 +38,15 @@ interface RefreshTokenRequest {
 interface RefreshTokenResponse {
   refreshToken: AuthPayload;
 }
+
+interface UpdateUserRequest {
+  name?: string;
+}
+
+interface MeResponse {
+  me: User;
+}
+
+interface UpdateMeResponse {
+  updateMe: User;
+}

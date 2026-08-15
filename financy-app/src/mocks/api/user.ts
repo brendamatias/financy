@@ -1,21 +1,34 @@
-import { HttpResponse, delay, http } from "msw";
+import { HttpResponse, delay, graphql } from "msw";
 
 import { db } from "@/mocks/data";
 
+const api = graphql.link(import.meta.env.VITE_GRAPHQL_URL);
+
+function withTypename(user: User) {
+  return { __typename: "UserModel", ...user };
+}
+
 export const userHandlers = [
-  http.get("/api/me", async () => {
+  api.query<MeResponse>("Me", async () => {
     await delay(200);
 
-    return HttpResponse.json(db.user);
+    return HttpResponse.json({ data: { me: withTypename(db.user) } });
   }),
 
-  http.put("/api/me", async ({ request }) => {
-    await delay(400);
+  api.mutation<UpdateMeResponse, { data: UpdateUserRequest }>(
+    "UpdateMe",
+    async ({ variables }) => {
+      await delay(400);
 
-    const { name } = (await request.json()) as { name: string };
+      db.user = {
+        ...db.user,
+        ...variables.data,
+        updatedAt: new Date().toISOString(),
+      };
 
-    db.user = { ...db.user, name };
-
-    return HttpResponse.json(db.user);
-  }),
+      return HttpResponse.json({
+        data: { updateMe: withTypename(db.user) },
+      });
+    },
+  ),
 ];

@@ -13,7 +13,7 @@ export const handlers = [
         ...categoryHandlers,
         ...dashboardHandlers,
         ...transactionHandlers,
+        ...userHandlers,
       ]
     : []),
-  ...userHandlers,
 ];

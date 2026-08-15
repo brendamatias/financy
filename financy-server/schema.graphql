@@ -114,6 +114,7 @@ type Mutation {
   refreshToken(data: RefreshTokenInput!): LoginOutput!
   register(data: RegisterInput!): RegisterOutput!
   updateCategory(data: UpdateCategoryInput!, id: String!): CategoryModel!
+  updateMe(data: UpdateUserInput!): UserModel!
   updateTransaction(data: UpdateTransactionInput!, id: String!): TransactionModel!
 }
 
@@ -134,10 +135,10 @@ type Query {
   getCategory(id: String!): CategoryModel!
   getDashboardSummary(data: DashboardSummaryInput): DashboardSummaryModel!
   getTransaction(id: String!): TransactionModel!
-  getUser(id: String!): UserModel!
   listCategories: [CategoryModel!]!
   listTransactionPeriods: [String!]!
   listTransactions(data: ListTransactionsInput): PaginatedTransactionsModel!
+  me: UserModel!
 }
 
 input RefreshTokenInput {
@@ -198,11 +199,14 @@ input UpdateTransactionInput {
   type: TransactionType
 }
 
+input UpdateUserInput {
+  name: String
+}
+
 type UserModel {
   createdAt: DateTimeISO!
   email: String!
   id: ID!
   name: String!
-  password: String!
   updatedAt: DateTimeISO!
 }

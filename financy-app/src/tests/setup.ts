@@ -8,6 +8,7 @@ import { authHandlers } from "@/mocks/api/auth";
 import { categoryHandlers } from "@/mocks/api/category";
 import { dashboardHandlers } from "@/mocks/api/dashboard";
 import { transactionHandlers } from "@/mocks/api/transaction";
+import { userHandlers } from "@/mocks/api/user";
 import { resetDb } from "@/mocks/data";
 import { apolloClient } from "@/services/apollo";
 import { useAuthStore } from "@/stores/auth";
@@ -17,6 +18,7 @@ export const server = setupServer(
   ...categoryHandlers,
   ...dashboardHandlers,
   ...transactionHandlers,
+  ...userHandlers,
 );
 
 globalThis.ResizeObserver = class {

@@ -1,6 +1,8 @@
+import { useMutation } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LogOut, Mail, UserRound } from "lucide-react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
@@ -10,7 +12,7 @@ import { Card } from "@/components/ui/card";
 import { InputField } from "@/components/ui/input-field";
 import { Separator } from "@/components/ui/separator";
 import { getInitials } from "@/lib/initials";
-import { useUpdateUser } from "@/services";
+import { UPDATE_ME } from "@/services";
 import { useAuthStore } from "@/stores/auth";
 
 const schema = z.object({
@@ -23,7 +25,14 @@ function Profile() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const signOut = useAuthStore((state) => state.signOut);
-  const { mutate: updateUser, isPending } = useUpdateUser();
+  const updateStoredUser = useAuthStore((state) => state.updateUser);
+  const [updateUser, { loading: isPending }] = useMutation(UPDATE_ME, {
+    onCompleted: ({ updateMe }) => {
+      updateStoredUser(updateMe);
+      toast.success("Perfil atualizado com sucesso.");
+    },
+    onError: (error) => toast.error(error.message),
+  });
 
   const {
     register,
@@ -37,7 +46,7 @@ function Profile() {
   });
 
   function onSubmit(data: ProfileFormData) {
-    updateUser(data);
+    updateUser({ variables: { data } });
   }
 
   function handleSignOut() {
