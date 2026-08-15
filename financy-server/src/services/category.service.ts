@@ -12,9 +12,27 @@ import { validate } from "../utils/validate";
 
 export class CategoryService {
   async listCategories(userId: string) {
-    return prismaClient.category.findMany({
-      where: { userId },
-      orderBy: { name: "asc" },
+    const [categories, stats] = await Promise.all([
+      prismaClient.category.findMany({
+        where: { userId },
+        orderBy: { name: "asc" },
+      }),
+      prismaClient.transaction.groupBy({
+        by: ["categoryId"],
+        where: { userId },
+        _count: { _all: true },
+        _sum: { amount: true },
+      }),
+    ]);
+
+    return categories.map((category) => {
+      const stat = stats.find((item) => item.categoryId === category.id);
+
+      return {
+        ...category,
+        transactionsCount: stat?._count._all ?? 0,
+        total: stat?._sum.amount ?? 0,
+      };
     });
   }
 
@@ -23,13 +41,23 @@ export class CategoryService {
 
     const category = await prismaClient.category.findFirst({
       where: { id: categoryId, userId },
+      include: { _count: { select: { transactions: true } } },
     });
 
     if (!category) {
       throw new Error("Categoria não encontrada!");
     }
 
-    return category;
+    const total = await prismaClient.transaction.aggregate({
+      where: { categoryId, userId },
+      _sum: { amount: true },
+    });
+
+    return {
+      ...category,
+      transactionsCount: category._count.transactions,
+      total: total._sum.amount ?? 0,
+    };
   }
 
   async createCategory(input: CreateCategoryInput, userId: string) {
@@ -43,9 +71,11 @@ export class CategoryService {
       throw new Error("Categoria já existe!");
     }
 
-    return prismaClient.category.create({
+    const category = await prismaClient.category.create({
       data: { ...data, userId },
     });
+
+    return { ...category, transactionsCount: 0, total: 0 };
   }
 
   async updateCategory(id: string, input: UpdateCategoryInput, userId: string) {
@@ -64,10 +94,12 @@ export class CategoryService {
       }
     }
 
-    return prismaClient.category.update({
+    await prismaClient.category.update({
       where: { id: categoryId },
       data,
     });
+
+    return this.findCategory(categoryId, userId);
   }
 
   async deleteCategory(id: string, userId: string) {
@@ -83,10 +115,17 @@ export class CategoryService {
   async getCategoriesSummary(userId: string) {
     const categories = await this.listCategories(userId);
 
+    const mostUsed = [...categories].sort(
+      (a, b) => b.transactionsCount - a.transactionsCount,
+    )[0];
+
     return {
       categoriesCount: categories.length,
-      transactionsCount: 0,
-      mostUsed: categories[0] ?? null,
+      transactionsCount: categories.reduce(
+        (count, category) => count + category.transactionsCount,
+        0,
+      ),
+      mostUsed: mostUsed ?? null,
     };
   }
 }

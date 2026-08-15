@@ -7,6 +7,8 @@ export const CATEGORY_FRAGMENT = gql`
     description
     color
     icon
+    transactionsCount
+    total
     createdAt
     updatedAt
   }

@@ -329,3 +329,134 @@ describe("TransactionService.updateTransaction", () => {
     ).rejects.toThrow("A data não pode ser no futuro");
   });
 });
+
+describe("TransactionService.updateTransaction", () => {
+  it("updates the fields of the transaction", async () => {
+    const [transaction] = (
+      await transactionService.listTransactions({}, userId)
+    ).data;
+
+    const updated = await transactionService.updateTransaction(
+      transaction.id,
+      { description: "Salário atualizado", amount: 5000 },
+      userId,
+    );
+
+    expect(updated.description).toBe("Salário atualizado");
+    expect(updated.amount).toBe(5000);
+    expect(updated.type).toBe(transaction.type);
+  });
+
+  it("moves the transaction to another category", async () => {
+    const [transaction] = (
+      await transactionService.listTransactions({}, userId)
+    ).data;
+
+    const updated = await transactionService.updateTransaction(
+      transaction.id,
+      { categoryId: transportId },
+      userId,
+    );
+
+    expect(updated.categoryId).toBe(transportId);
+  });
+
+  it("rejects a category from another user", async () => {
+    const [transaction] = (
+      await transactionService.listTransactions({}, userId)
+    ).data;
+
+    const category = await categoryService.createCategory(
+      { name: "Outra", description: "", color: "red", icon: "health" },
+      otherUserId,
+    );
+
+    await expect(
+      transactionService.updateTransaction(
+        transaction.id,
+        { categoryId: category.id },
+        userId,
+      ),
+    ).rejects.toThrow("Categoria não encontrada!");
+  });
+
+  it("requires the transaction id", async () => {
+    await expect(
+      transactionService.updateTransaction("", { amount: 10 }, userId),
+    ).rejects.toThrow("Informe o id da transação");
+  });
+
+  it("rejects a transaction from another user", async () => {
+    const [transaction] = (
+      await transactionService.listTransactions({}, userId)
+    ).data;
+
+    await expect(
+      transactionService.updateTransaction(
+        transaction.id,
+        { amount: 10 },
+        otherUserId,
+      ),
+    ).rejects.toThrow("Transação não encontrada!");
+  });
+});
+
+describe("TransactionService.deleteTransaction", () => {
+  it("deletes the transaction", async () => {
+    const [transaction] = (
+      await transactionService.listTransactions({}, userId)
+    ).data;
+
+    await expect(
+      transactionService.deleteTransaction(transaction.id, userId),
+    ).resolves.toBe(true);
+
+    const result = await transactionService.listTransactions({}, userId);
+
+    expect(result.meta.total).toBe(2);
+  });
+
+  it("requires the transaction id", async () => {
+    await expect(
+      transactionService.deleteTransaction("", userId),
+    ).rejects.toThrow("Informe o id da transação");
+  });
+
+  it("rejects a transaction from another user", async () => {
+    const [transaction] = (
+      await transactionService.listTransactions({}, userId)
+    ).data;
+
+    await expect(
+      transactionService.deleteTransaction(transaction.id, otherUserId),
+    ).rejects.toThrow("Transação não encontrada!");
+
+    expect(await prismaClient.transaction.count()).toBe(3);
+  });
+});
+
+describe("TransactionService.findTransaction", () => {
+  it("returns the transaction with its category", async () => {
+    const [transaction] = (
+      await transactionService.listTransactions({}, userId)
+    ).data;
+
+    const result = await transactionService.findTransaction(
+      transaction.id,
+      userId,
+    );
+
+    expect(result.id).toBe(transaction.id);
+    expect(result.category.name).toBeTruthy();
+  });
+
+  it("rejects a transaction from another user", async () => {
+    const [transaction] = (
+      await transactionService.listTransactions({}, userId)
+    ).data;
+
+    await expect(
+      transactionService.findTransaction(transaction.id, otherUserId),
+    ).rejects.toThrow("Transação não encontrada!");
+  });
+});

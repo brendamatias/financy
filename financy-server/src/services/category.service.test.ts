@@ -17,6 +17,23 @@ const validCategory = {
 let userId: string;
 let otherUserId: string;
 
+async function createTransaction(
+  categoryId: string,
+  ownerId: string,
+  amount: number,
+) {
+  return prismaClient.transaction.create({
+    data: {
+      description: "Transação",
+      amount,
+      type: "expense",
+      date: new Date("2025-11-10T00:00:00.000Z"),
+      categoryId,
+      userId: ownerId,
+    },
+  });
+}
+
 beforeEach(async () => {
   const owner = await authService.register({
     name: "Conta Teste",
@@ -80,6 +97,58 @@ describe("CategoryService.createCategory", () => {
     );
 
     expect(category.userId).toBe(otherUserId);
+  });
+});
+
+describe("CategoryService category stats", () => {
+  it("starts with no transactions", async () => {
+    await categoryService.createCategory(validCategory, userId);
+
+    const [category] = await categoryService.listCategories(userId);
+
+    expect(category.transactionsCount).toBe(0);
+    expect(category.total).toBe(0);
+  });
+
+  it("counts the transactions and sums the amounts", async () => {
+    const category = await categoryService.createCategory(
+      validCategory,
+      userId,
+    );
+
+    await createTransaction(category.id, userId, 89.5);
+    await createTransaction(category.id, userId, 10.5);
+
+    const [result] = await categoryService.listCategories(userId);
+
+    expect(result.transactionsCount).toBe(2);
+    expect(result.total).toBe(100);
+  });
+
+  it("does not count transactions from another user", async () => {
+    const category = await categoryService.createCategory(
+      validCategory,
+      userId,
+    );
+
+    const [result] = await categoryService.listCategories(userId);
+
+    expect(result.transactionsCount).toBe(0);
+    expect(category.transactionsCount).toBe(0);
+  });
+
+  it("keeps the stats when the category is found by id", async () => {
+    const category = await categoryService.createCategory(
+      validCategory,
+      userId,
+    );
+
+    await createTransaction(category.id, userId, 25);
+
+    const result = await categoryService.findCategory(category.id, userId);
+
+    expect(result.transactionsCount).toBe(1);
+    expect(result.total).toBe(25);
   });
 });
 
@@ -166,6 +235,21 @@ describe("CategoryService.deleteCategory", () => {
 
     expect(await prismaClient.category.count()).toBe(1);
   });
+
+  it("does not delete a category that has transactions", async () => {
+    const category = await categoryService.createCategory(
+      validCategory,
+      userId,
+    );
+
+    await createTransaction(category.id, userId, 50);
+
+    await expect(
+      categoryService.deleteCategory(category.id, userId),
+    ).rejects.toThrow();
+
+    expect(await prismaClient.category.count()).toBe(1);
+  });
 });
 
 describe("CategoryService.getCategoriesSummary", () => {
@@ -189,19 +273,33 @@ describe("CategoryService.getCategoriesSummary", () => {
     expect(summary.mostUsed).toBeNull();
   });
 
-  it("returns zero transactions while the transaction model does not exist", async () => {
-    await categoryService.createCategory(validCategory, userId);
+  it("counts the transactions of the user", async () => {
+    const category = await categoryService.createCategory(
+      validCategory,
+      userId,
+    );
+
+    await createTransaction(category.id, userId, 10);
+    await createTransaction(category.id, userId, 20);
 
     const summary = await categoryService.getCategoriesSummary(userId);
 
-    expect(summary.transactionsCount).toBe(0);
+    expect(summary.transactionsCount).toBe(2);
   });
 
-  it("returns a category as the most used one", async () => {
-    await categoryService.createCategory(validCategory, userId);
+  it("returns the category with most transactions as the most used one", async () => {
+    const food = await categoryService.createCategory(validCategory, userId);
+    const transport = await categoryService.createCategory(
+      { ...validCategory, name: "Transporte", color: "purple", icon: "car" },
+      userId,
+    );
+
+    await createTransaction(food.id, userId, 10);
+    await createTransaction(transport.id, userId, 10);
+    await createTransaction(transport.id, userId, 10);
 
     const summary = await categoryService.getCategoriesSummary(userId);
 
-    expect(summary.mostUsed?.name).toBe(validCategory.name);
+    expect(summary.mostUsed?.name).toBe("Transporte");
   });
 });

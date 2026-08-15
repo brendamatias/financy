@@ -1,4 +1,11 @@
-import { Field, GraphQLISODateTime, ID, ObjectType } from "type-graphql";
+import {
+  Field,
+  Float,
+  GraphQLISODateTime,
+  ID,
+  Int,
+  ObjectType,
+} from "type-graphql";
 import { UserModel } from "./user.model";
 
 @ObjectType()
@@ -23,6 +30,12 @@ export class CategoryModel {
 
   @Field(() => UserModel, { nullable: true })
   user?: UserModel;
+
+  @Field(() => Int)
+  transactionsCount!: number;
+
+  @Field(() => Float)
+  total!: number;
 
   @Field(() => GraphQLISODateTime)
   createdAt!: Date;

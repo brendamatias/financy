@@ -47,6 +47,25 @@ describe("Transactions page", () => {
     expect(screen.queryByText("Jantar no Restaurante")).toBeNull();
   });
 
+  it("does not delete when the user cancels the confirmation", async () => {
+    const target = db.transactions[0];
+    const { user } = renderPage();
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: `Excluir ${target.description}`,
+      }),
+    );
+
+    await user.click(await screen.findByRole("button", { name: "Cancelar" }));
+
+    await waitFor(() =>
+      expect(screen.queryByText("Excluir transação")).toBeNull(),
+    );
+
+    expect(screen.getByText(target.description)).toBeVisible();
+  });
+
   it("deletes a transaction", async () => {
     const target = db.transactions[0];
     const { user } = renderPage();
@@ -57,9 +76,7 @@ describe("Transactions page", () => {
 
     await user.click(deleteButton);
 
-    await user.click(
-      await screen.findByRole("button", { name: /^Excluir$/ }),
-    );
+    await user.click(await screen.findByRole("button", { name: /^Excluir$/ }));
 
     await waitFor(() =>
       expect(document.body).toHaveTextContent(

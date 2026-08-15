@@ -16,6 +16,8 @@ type CategoryModel {
   icon: String!
   id: ID!
   name: String!
+  total: Float!
+  transactionsCount: Int!
   updatedAt: DateTimeISO!
   user: UserModel
   userId: String!
@@ -106,9 +108,16 @@ type RegisterOutput {
   user: UserModel!
 }
 
+type TransactionCategoryModel {
+  color: String!
+  icon: String!
+  id: ID!
+  name: String!
+}
+
 type TransactionModel {
   amount: Float!
-  category: CategoryModel
+  category: TransactionCategoryModel
   categoryId: String!
   createdAt: DateTimeISO!
   date: DateTimeISO!

@@ -29,6 +29,14 @@ describe("Categories page", () => {
     expect(screen.getByText(String(db.categories.length))).toBeVisible();
   });
 
+  it("shows the transaction count that came from the api", async () => {
+    db.categories[0].transactionsCount = 12;
+
+    renderPage();
+
+    expect(await screen.findByText("12 itens")).toBeVisible();
+  });
+
   it("shows the empty state when there is no category", async () => {
     db.categories = [];
 
@@ -68,9 +76,7 @@ describe("Categories page", () => {
 
     await user.click(deleteButton);
 
-    await user.click(
-      await screen.findByRole("button", { name: /^Excluir$/ }),
-    );
+    await user.click(await screen.findByRole("button", { name: /^Excluir$/ }));
 
     await waitFor(() =>
       expect(document.body).toHaveTextContent(

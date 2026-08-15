@@ -1,6 +1,20 @@
 import { Field, Float, GraphQLISODateTime, ID, ObjectType } from "type-graphql";
-import { CategoryModel } from "./category.model";
 import { UserModel } from "./user.model";
+
+@ObjectType()
+export class TransactionCategoryModel {
+  @Field(() => ID)
+  id!: string;
+
+  @Field(() => String)
+  name!: string;
+
+  @Field(() => String)
+  color!: string;
+
+  @Field(() => String)
+  icon!: string;
+}
 
 @ObjectType()
 export class TransactionModel {
@@ -22,8 +36,8 @@ export class TransactionModel {
   @Field(() => String)
   categoryId!: string;
 
-  @Field(() => CategoryModel, { nullable: true })
-  category?: CategoryModel;
+  @Field(() => TransactionCategoryModel, { nullable: true })
+  category?: TransactionCategoryModel;
 
   @Field(() => String)
   userId!: string;
