@@ -93,7 +93,7 @@ function Dashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="grid gap-6 md:grid-cols-3">
+      <section className="grid gap-3 md:gap-6 md:grid-cols-3">
         {isLoadingSummary
           ? Array.from({ length: 3 }, (_, index) => (
               <SummaryCardSkeleton key={index} />
@@ -130,12 +130,12 @@ function Dashboard() {
                 ? Array.from({ length: RECENT_TRANSACTIONS }, (_, index) => (
                     <li
                       key={index}
-                      className="flex h-20 items-center gap-4 border-b border-gray-200 px-6"
+                      className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-gray-200 px-4 py-4 sm:flex-nowrap sm:h-20 sm:px-6"
                     >
-                      <Skeleton className="size-10 rounded-lg" />
+                      <Skeleton className="size-10 shrink-0 rounded-lg" />
 
                       <div className="flex flex-1 flex-col gap-1">
-                        <Skeleton className="h-5 w-48" />
+                        <Skeleton className="h-5 w-40 max-w-full" />
                         <Skeleton className="h-4 w-20" />
                       </div>
 
@@ -146,15 +146,15 @@ function Dashboard() {
                 : transactions?.data.map((transaction) => (
                     <li
                       key={transaction.id}
-                      className="flex h-20 items-center gap-4 border-b border-gray-200 px-6"
+                      className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-gray-200 px-4 py-4 sm:h-20 sm:flex-nowrap sm:px-6"
                     >
                       <CategoryIcon
                         icon={getCategoryIcon(transaction.category.icon)}
                         color={transaction.category.color}
                       />
 
-                      <div className="flex flex-1 flex-col">
-                        <span className="text-base font-medium text-gray-800">
+                      <div className="flex min-w-0 flex-1 flex-col">
+                        <span className="truncate text-base font-medium text-gray-800">
                           {transaction.description}
                         </span>
                         <span className="text-sm text-gray-600">
@@ -166,7 +166,7 @@ function Dashboard() {
                         {transaction.category.name}
                       </Tag>
 
-                      <div className="flex w-40 items-center justify-end gap-2">
+                      <div className="flex w-full items-center justify-end gap-2 sm:w-40">
                         <strong className="text-sm font-semibold text-gray-800">
                           {formatSignedCurrency(
                             transaction.type === "expense"

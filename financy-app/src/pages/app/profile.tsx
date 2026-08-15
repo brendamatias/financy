@@ -55,7 +55,7 @@ function Profile() {
   }
 
   return (
-    <Card className="mx-auto flex w-full max-w-md flex-col gap-8 p-8">
+    <Card className="mx-auto flex w-full max-w-md flex-col gap-8 md:p-8">
       <div className="flex flex-col items-center gap-6">
         <Avatar size="xl">
           <AvatarFallback>{getInitials(user?.name ?? "")}</AvatarFallback>

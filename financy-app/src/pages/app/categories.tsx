@@ -76,7 +76,7 @@ function Categories() {
         </DialogCategoryForm>
       </div>
 
-      <section className="grid gap-6 md:grid-cols-3">
+      <section className="grid gap-3 md:gap-6 md:grid-cols-3">
         {isLoadingSummary
           ? Array.from({ length: 3 }, (_, index) => (
               <SummaryCardSkeleton key={index} />
@@ -107,7 +107,7 @@ function Categories() {
           }
         />
       ) : (
-        <section className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+        <section className="grid gap-3 md:gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
           {isLoading
             ? Array.from({ length: 8 }, (_, index) => (
                 <CategoryCardSkeleton key={index} />
