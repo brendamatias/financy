@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+echo "==> Aplicando migrations"
+npx prisma migrate deploy
+
+echo "==> Iniciando o servidor"
+exec npx tsx src/index.ts

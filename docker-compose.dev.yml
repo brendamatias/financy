@@ -1,0 +1,36 @@
+services:
+  server:
+    build:
+      context: ./financy-server
+      target: dev
+    command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run dev"
+    environment:
+      DATABASE_URL: file:/app/data/financy.db
+      JWT_SECRET: ${JWT_SECRET:-dev-secret}
+      PORT: 4000
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      APP_URL: ${APP_URL:-http://localhost:5173}
+    ports:
+      - "${SERVER_PORT:-4000}:4000"
+    volumes:
+      - ./financy-server:/app
+      - /app/node_modules
+      - financy-data-dev:/app/data
+
+  app:
+    build:
+      context: ./financy-app
+      target: dev
+    environment:
+      VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:4000/graphql}
+      VITE_GRAPHQL_MOCK: ${VITE_GRAPHQL_MOCK:-false}
+    ports:
+      - "${APP_PORT:-5173}:5173"
+    volumes:
+      - ./financy-app:/app
+      - /app/node_modules
+    depends_on:
+      - server
+
+volumes:
+  financy-data-dev:

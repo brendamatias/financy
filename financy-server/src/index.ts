@@ -11,15 +11,26 @@ import { CategoryResolver } from "./resolvers/category.resolver";
 import { TransactionResolver } from "./resolvers/transaction.resolver";
 import { DashboardResolver } from "./resolvers/dashboard.resolver";
 
+const port = Number(process.env.PORT ?? 4000);
+
+const corsOrigin = (process.env.CORS_ORIGIN ?? "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 async function main() {
   const app = express();
 
   app.use(
     cors({
-      origin: "http://localhost:5173",
+      origin: corsOrigin,
       credentials: true,
     }),
   );
+
+  app.get("/health", (_request, response) => {
+    response.json({ status: "ok" });
+  });
 
   const schema = await buildSchema({
     resolvers: [
@@ -47,8 +58,8 @@ async function main() {
     }),
   );
 
-  app.listen({ port: 4000 }, () => {
-    console.log(`🚀 Server ready at port 4000`);
+  app.listen({ port, host: "0.0.0.0" }, () => {
+    console.log(`🚀 Server ready at port ${port}`);
   });
 }
 
