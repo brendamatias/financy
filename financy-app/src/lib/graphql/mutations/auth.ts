@@ -56,3 +56,21 @@ export const REFRESH_TOKEN_MUTATION: TypedDocumentNode<
     }
   }
 `;
+
+export const REQUEST_PASSWORD_RESET_MUTATION: TypedDocumentNode<
+  RequestPasswordResetResponse,
+  { data: RequestPasswordResetRequest }
+> = gql`
+  mutation RequestPasswordReset($data: RequestPasswordResetInput!) {
+    requestPasswordReset(data: $data)
+  }
+`;
+
+export const RESET_PASSWORD_MUTATION: TypedDocumentNode<
+  ResetPasswordResponse,
+  { data: ResetPasswordRequest }
+> = gql`
+  mutation ResetPassword($data: ResetPasswordInput!) {
+    resetPassword(data: $data)
+  }
+`;

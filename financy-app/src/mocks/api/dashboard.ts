@@ -1,9 +1,8 @@
-import { HttpResponse, delay, graphql } from "msw";
+import { HttpResponse, delay } from "msw";
 
 import { db } from "@/mocks/data";
+import { api } from "@/mocks/graphql";
 import { toPeriod } from "@/mocks/utils";
-
-const api = graphql.link(import.meta.env.VITE_GRAPHQL_URL);
 
 function sum(type: TransactionType, period?: string) {
   return db.transactions

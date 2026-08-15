@@ -172,3 +172,109 @@ describe("AuthService.refreshToken", () => {
     );
   });
 });
+
+describe("AuthService.requestPasswordReset", () => {
+  it("creates a reset token for a known email", async () => {
+    await authService.register(validUser);
+
+    await expect(
+      authService.requestPasswordReset({ email: validUser.email }),
+    ).resolves.toBe(true);
+
+    const reset = await prismaClient.passwordReset.findFirst();
+
+    expect(reset?.token).toBeTruthy();
+    expect(reset?.usedAt).toBeNull();
+    expect(reset!.expiresAt.getTime()).toBeGreaterThan(Date.now());
+  });
+
+  it("answers the same way for an unknown email, without creating a token", async () => {
+    await expect(
+      authService.requestPasswordReset({ email: "naoexiste@teste.com" }),
+    ).resolves.toBe(true);
+
+    expect(await prismaClient.passwordReset.count()).toBe(0);
+  });
+
+  it("rejects an invalid email", async () => {
+    await expect(
+      authService.requestPasswordReset({ email: "not-an-email" }),
+    ).rejects.toThrow("Informe um e-mail válido");
+  });
+});
+
+describe("AuthService.resetPassword", () => {
+  async function createResetToken() {
+    await authService.register(validUser);
+    await authService.requestPasswordReset({ email: validUser.email });
+
+    const reset = await prismaClient.passwordReset.findFirstOrThrow();
+
+    return reset.token;
+  }
+
+  it("changes the password and lets the user sign in with it", async () => {
+    const token = await createResetToken();
+
+    await expect(
+      authService.resetPassword({ token, password: "nova-senha-123" }),
+    ).resolves.toBe(true);
+
+    const result = await authService.login({
+      email: validUser.email,
+      password: "nova-senha-123",
+    });
+
+    expect(result.user.email).toBe(validUser.email);
+  });
+
+  it("invalidates the old password", async () => {
+    const token = await createResetToken();
+
+    await authService.resetPassword({ token, password: "nova-senha-123" });
+
+    await expect(
+      authService.login({
+        email: validUser.email,
+        password: validUser.password,
+      }),
+    ).rejects.toThrow("E-mail ou senha incorretos!");
+  });
+
+  it("does not accept the same token twice", async () => {
+    const token = await createResetToken();
+
+    await authService.resetPassword({ token, password: "nova-senha-123" });
+
+    await expect(
+      authService.resetPassword({ token, password: "outra-senha-123" }),
+    ).rejects.toThrow("Link de recuperação inválido ou expirado.");
+  });
+
+  it("rejects an unknown token", async () => {
+    await expect(
+      authService.resetPassword({ token: "nao-existe", password: "12345678" }),
+    ).rejects.toThrow("Link de recuperação inválido ou expirado.");
+  });
+
+  it("rejects an expired token", async () => {
+    const token = await createResetToken();
+
+    await prismaClient.passwordReset.update({
+      where: { token },
+      data: { expiresAt: new Date(Date.now() - 1000) },
+    });
+
+    await expect(
+      authService.resetPassword({ token, password: "nova-senha-123" }),
+    ).rejects.toThrow("Link de recuperação inválido ou expirado.");
+  });
+
+  it("rejects a short password", async () => {
+    const token = await createResetToken();
+
+    await expect(
+      authService.resetPassword({ token, password: "1234" }),
+    ).rejects.toThrow("A senha deve ter no mínimo 8 caracteres");
+  });
+});

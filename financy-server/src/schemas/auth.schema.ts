@@ -22,3 +22,16 @@ export const registerSchema = z.object({
 export const refreshTokenSchema = z.object({
   refreshToken: z.string().trim().min(1, "Informe o refresh token"),
 });
+
+export const requestPasswordResetSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, "Informe o e-mail")
+    .pipe(z.email("Informe um e-mail válido")),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().trim().min(1, "Informe o código de recuperação"),
+  password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
+});

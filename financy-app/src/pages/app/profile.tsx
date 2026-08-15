@@ -61,7 +61,7 @@ function Profile() {
           <AvatarFallback>{getInitials(user?.name ?? "")}</AvatarFallback>
         </Avatar>
 
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center text-center">
           <strong className="text-xl font-bold text-gray-800">
             {user?.name}
           </strong>

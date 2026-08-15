@@ -26,3 +26,18 @@ export class RefreshTokenInput {
   @Field(() => String)
   refreshToken!: string;
 }
+
+@InputType()
+export class RequestPasswordResetInput {
+  @Field(() => String)
+  email!: string;
+}
+
+@InputType()
+export class ResetPasswordInput {
+  @Field(() => String)
+  token!: string;
+
+  @Field(() => String)
+  password!: string;
+}

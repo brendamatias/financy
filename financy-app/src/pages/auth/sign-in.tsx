@@ -98,7 +98,9 @@ function SignIn() {
               )}
             />
 
-            <Link href="/recuperar-senha">Recuperar senha</Link>
+            <Link asChild>
+              <RouterLink to="/forgot-password">Recuperar senha</RouterLink>
+            </Link>
           </div>
         </div>
 

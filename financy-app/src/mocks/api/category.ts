@@ -1,8 +1,7 @@
-import { HttpResponse, delay, graphql } from "msw";
+import { HttpResponse, delay } from "msw";
 
 import { db } from "@/mocks/data";
-
-const api = graphql.link(import.meta.env.VITE_GRAPHQL_URL);
+import { api } from "@/mocks/graphql";
 
 function withTypename(category: Category) {
   return { __typename: "CategoryModel", ...category };

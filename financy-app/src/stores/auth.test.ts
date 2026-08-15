@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { HttpResponse, graphql } from "msw";
+import { HttpResponse } from "msw";
 
 import { db } from "@/mocks/data";
+import { api } from "@/mocks/graphql";
 import { useAuthStore } from "@/stores/auth";
 import { server } from "@/tests/setup";
-
-const api = graphql.link(import.meta.env.VITE_GRAPHQL_URL);
 
 const credentials = {
   email: db.user.email,

@@ -5,7 +5,9 @@ import { AuthLayout, DefaultLayout } from "@/layouts";
 import {
   Categories,
   Dashboard,
+  ForgotPassword,
   Profile,
+  ResetPassword,
   SignIn,
   SignUp,
   Transactions,
@@ -32,6 +34,14 @@ export const router = createBrowserRouter([
       {
         path: "/sign-up",
         element: <SignUp />,
+      },
+      {
+        path: "/forgot-password",
+        element: <ForgotPassword />,
+      },
+      {
+        path: "/reset-password",
+        element: <ResetPassword />,
       },
     ],
   },

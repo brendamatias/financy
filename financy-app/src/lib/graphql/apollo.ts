@@ -11,7 +11,7 @@ import { ErrorLink } from "@apollo/client/link/error";
 import { useAuthStore } from "@/stores/auth";
 
 const httpLink = new HttpLink({
-  uri: import.meta.env.VITE_GRAPHQL_URL,
+  uri: import.meta.env.VITE_BACKEND_URL,
 });
 
 const authLink: SetContextLink = new SetContextLink(({ headers }) => {

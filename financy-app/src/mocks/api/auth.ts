@@ -1,8 +1,7 @@
-import { HttpResponse, delay, graphql } from "msw";
+import { HttpResponse, delay } from "msw";
 
 import { db } from "@/mocks/data";
-
-const api = graphql.link(import.meta.env.VITE_GRAPHQL_URL);
+import { api } from "@/mocks/graphql";
 
 const MOCK_PASSWORD = "12345678";
 
@@ -15,7 +14,37 @@ function buildPayload(user: User) {
   };
 }
 
+const usedResetTokens = new Set<string>();
+
 export const authHandlers = [
+  api.mutation<
+    RequestPasswordResetResponse,
+    { data: RequestPasswordResetRequest }
+  >("RequestPasswordReset", async () => {
+    await delay(600);
+
+    return HttpResponse.json({ data: { requestPasswordReset: true } });
+  }),
+
+  api.mutation<ResetPasswordResponse, { data: ResetPasswordRequest }>(
+    "ResetPassword",
+    async ({ variables }) => {
+      await delay(600);
+
+      const { token } = variables.data;
+
+      if (!token.startsWith("reset-") || usedResetTokens.has(token)) {
+        return HttpResponse.json({
+          errors: [{ message: "Link de recuperação inválido ou expirado." }],
+        });
+      }
+
+      usedResetTokens.add(token);
+
+      return HttpResponse.json({ data: { resetPassword: true } });
+    },
+  ),
+
   api.mutation<RefreshTokenResponse, { data: RefreshTokenRequest }>(
     "RefreshToken",
     async ({ variables }) => {

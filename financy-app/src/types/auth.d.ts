@@ -50,3 +50,20 @@ interface MeResponse {
 interface UpdateMeResponse {
   updateMe: User;
 }
+
+interface RequestPasswordResetRequest {
+  email: string;
+}
+
+interface RequestPasswordResetResponse {
+  requestPasswordReset: boolean;
+}
+
+interface ResetPasswordRequest {
+  token: string;
+  password: string;
+}
+
+interface ResetPasswordResponse {
+  resetPassword: boolean;
+}

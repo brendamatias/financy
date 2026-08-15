@@ -12,11 +12,13 @@ export function renderWithRouter(
 ) {
   const user = userEvent.setup();
 
+  const routePath = path.split("?")[0];
+
   const result = render(
     <ApolloProvider client={apolloClient}>
       <MemoryRouter initialEntries={[path]}>
         <Routes>
-          <Route path={path} element={element} />
+          <Route path={routePath} element={element} />
           <Route path="/dashboard" element={<h1>Dashboard</h1>} />
           <Route path="/sign-in" element={<h1>Fazer login</h1>} />
         </Routes>

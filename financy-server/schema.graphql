@@ -113,6 +113,8 @@ type Mutation {
   login(data: LoginInput!): LoginOutput!
   refreshToken(data: RefreshTokenInput!): LoginOutput!
   register(data: RegisterInput!): RegisterOutput!
+  requestPasswordReset(data: RequestPasswordResetInput!): Boolean!
+  resetPassword(data: ResetPasswordInput!): Boolean!
   updateCategory(data: UpdateCategoryInput!, id: String!): CategoryModel!
   updateMe(data: UpdateUserInput!): UserModel!
   updateTransaction(data: UpdateTransactionInput!, id: String!): TransactionModel!
@@ -155,6 +157,15 @@ type RegisterOutput {
   refreshToken: String!
   token: String!
   user: UserModel!
+}
+
+input RequestPasswordResetInput {
+  email: String!
+}
+
+input ResetPasswordInput {
+  password: String!
+  token: String!
 }
 
 type TransactionCategoryModel {
