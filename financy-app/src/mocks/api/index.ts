@@ -7,8 +7,7 @@ import { userHandlers } from "./user";
 const useGraphqlMock = import.meta.env.VITE_GRAPHQL_MOCK === "true";
 
 export const handlers = [
-  ...(useGraphqlMock ? authHandlers : []),
-  ...categoryHandlers,
+  ...(useGraphqlMock ? [...authHandlers, ...categoryHandlers] : []),
   ...dashboardHandlers,
   ...transactionHandlers,
   ...userHandlers,

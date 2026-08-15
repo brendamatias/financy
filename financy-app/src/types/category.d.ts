@@ -27,21 +27,23 @@ type CategoryIconName =
   | "energy";
 
 interface Category {
+  __typename?: string;
   id: string;
   name: string;
   description: string;
   color: CategoryColor;
   icon: CategoryIconName;
-  transactionsCount: number;
-  total: number;
+  createdAt: string;
+  updatedAt: string;
+  transactionsCount?: number;
+  total?: number;
 }
 
-type CategoryRecord = Omit<Category, "transactionsCount" | "total">;
-
 interface CategoriesSummary {
+  __typename?: string;
   categoriesCount: number;
   transactionsCount: number;
-  mostUsed: Pick<Category, "name" | "color" | "icon"> | null;
+  mostUsed: Pick<Category, "__typename" | "name" | "color" | "icon"> | null;
 }
 
 interface CreateCategoryRequest {
@@ -49,4 +51,31 @@ interface CreateCategoryRequest {
   description: string;
   color: CategoryColor;
   icon: CategoryIconName;
+}
+
+interface UpdateCategoryRequest {
+  name?: string;
+  description?: string;
+  color?: CategoryColor;
+  icon?: CategoryIconName;
+}
+
+interface CategoriesResponse {
+  getCategories: Category[];
+}
+
+interface CategoriesSummaryResponse {
+  getCategoriesSummary: CategoriesSummary;
+}
+
+interface CreateCategoryResponse {
+  createCategory: Category;
+}
+
+interface UpdateCategoryResponse {
+  updateCategory: Category;
+}
+
+interface DeleteCategoryResponse {
+  deleteCategory: boolean;
 }

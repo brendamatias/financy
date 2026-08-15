@@ -1,6 +1,7 @@
-import * as React from "react";
+import { useQuery } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleArrowDown, CircleArrowUp } from "lucide-react";
+import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { InputField } from "@/components/ui/input-field";
 import { SelectField } from "@/components/ui/select-field";
-import { useCategories, useCreateTransaction } from "@/services";
+import { GET_CATEGORIES, useCreateTransaction } from "@/services";
 
 const types = [
   {
@@ -42,7 +43,6 @@ const defaultValues: TransactionFormData = {
   amount: "",
   categoryId: "",
 };
-
 function formatCurrency(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 12);
 
@@ -61,7 +61,8 @@ function parseCurrency(value: string) {
 }
 
 function DialogCreateTransaction({ children }: { children: React.ReactNode }) {
-  const { data: categories } = useCategories();
+  const { data: categoriesData } = useQuery(GET_CATEGORIES);
+  const categories = categoriesData?.getCategories;
   const { mutate: createTransaction, isPending } = useCreateTransaction();
   const [open, setOpen] = React.useState(false);
 
@@ -99,8 +100,16 @@ function DialogCreateTransaction({ children }: { children: React.ReactNode }) {
     );
   }
 
+  function handleOpenChange(next: boolean) {
+    setOpen(next);
+
+    if (!next) {
+      reset(defaultValues);
+    }
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
       <DialogContent
@@ -121,7 +130,9 @@ function DialogCreateTransaction({ children }: { children: React.ReactNode }) {
                   <Button
                     key={type.value}
                     type="button"
-                    variant={field.value === type.value ? type.variant : "ghost"}
+                    variant={
+                      field.value === type.value ? type.variant : "ghost"
+                    }
                     onClick={() => field.onChange(type.value)}
                     aria-pressed={field.value === type.value}
                   >

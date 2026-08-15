@@ -1,7 +1,10 @@
+import { ApolloProvider } from "@apollo/client/react";
 import { render } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Toaster } from "react-hot-toast";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+
+import { apolloClient } from "@/services/apollo";
 
 export function renderWithRouter(
   element: React.ReactNode,
@@ -10,15 +13,17 @@ export function renderWithRouter(
   const user = userEvent.setup();
 
   const result = render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route path={path} element={element} />
-        <Route path="/dashboard" element={<h1>Dashboard</h1>} />
-        <Route path="/sign-in" element={<h1>Fazer login</h1>} />
-      </Routes>
+    <ApolloProvider client={apolloClient}>
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route path={path} element={element} />
+          <Route path="/dashboard" element={<h1>Dashboard</h1>} />
+          <Route path="/sign-in" element={<h1>Fazer login</h1>} />
+        </Routes>
 
-      <Toaster />
-    </MemoryRouter>,
+        <Toaster />
+      </MemoryRouter>
+    </ApolloProvider>,
   );
 
   return { user, ...result };

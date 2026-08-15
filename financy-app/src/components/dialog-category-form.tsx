@@ -1,6 +1,8 @@
-import * as React from "react";
+import { useMutation } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -10,7 +12,11 @@ import { IconButton } from "@/components/ui/icon-button";
 import { InputField } from "@/components/ui/input-field";
 import { categoryIcons } from "@/lib/category-icons";
 import { cn } from "@/lib/utils";
-import { useCreateCategory } from "@/services";
+import {
+  CREATE_CATEGORY,
+  REFETCH_CATEGORIES,
+  UPDATE_CATEGORY,
+} from "@/services";
 
 const icons = Object.entries(categoryIcons) as [
   CategoryIconName,
@@ -42,10 +48,24 @@ const defaultValues: CategoryFormData = {
   icon: "briefcase",
   color: "green",
 };
-
-function DialogCreateCategory({ children }: { children: React.ReactNode }) {
-  const { mutate: createCategory, isPending } = useCreateCategory();
+function DialogCategoryForm({
+  children,
+  category,
+}: {
+  children: React.ReactNode;
+  category?: Category;
+}) {
+  const isEditing = Boolean(category);
   const [open, setOpen] = React.useState(false);
+
+  const initialValues: CategoryFormData = category
+    ? {
+        name: category.name,
+        description: category.description,
+        icon: category.icon,
+        color: category.color,
+      }
+    : defaultValues;
 
   const {
     register,
@@ -55,24 +75,57 @@ function DialogCreateCategory({ children }: { children: React.ReactNode }) {
     formState: { errors },
   } = useForm<CategoryFormData>({
     resolver: zodResolver(schema),
-    defaultValues,
+    defaultValues: initialValues,
   });
 
+  const mutationOptions = {
+    refetchQueries: REFETCH_CATEGORIES,
+    onCompleted: () => {
+      toast.success(
+        isEditing
+          ? "Categoria atualizada com sucesso."
+          : "Categoria criada com sucesso.",
+      );
+      setOpen(false);
+    },
+    onError: (error: Error) => toast.error(error.message),
+  };
+
+  const [createCategory, { loading: isCreating }] = useMutation(
+    CREATE_CATEGORY,
+    mutationOptions,
+  );
+
+  const [updateCategory, { loading: isUpdating }] = useMutation(
+    UPDATE_CATEGORY,
+    mutationOptions,
+  );
+
+  const isPending = isCreating || isUpdating;
+
   function onSubmit(data: CategoryFormData) {
-    createCategory(data, {
-      onSuccess: () => {
-        reset(defaultValues);
-        setOpen(false);
-      },
-    });
+    if (category) {
+      updateCategory({ variables: { id: category.id, data } });
+      return;
+    }
+
+    createCategory({ variables: { data } });
+  }
+
+  function handleOpenChange(next: boolean) {
+    setOpen(next);
+
+    if (!next) {
+      reset(initialValues);
+    }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
       <DialogContent
-        title="Nova categoria"
+        title={isEditing ? "Editar categoria" : "Nova categoria"}
         description="Organize suas transações com categorias"
       >
         <form
@@ -163,4 +216,4 @@ function DialogCreateCategory({ children }: { children: React.ReactNode }) {
   );
 }
 
-export { DialogCreateCategory };
+export { DialogCategoryForm };

@@ -1,10 +1,12 @@
-const categories: CategoryRecord[] = [
+const categories: Category[] = [
   {
     id: "1",
     name: "Alimentação",
     description: "Restaurantes, delivery e refeições",
     color: "blue",
     icon: "food",
+    createdAt: "2025-11-01T00:00:00.000Z",
+    updatedAt: "2025-11-01T00:00:00.000Z",
   },
   {
     id: "2",
@@ -12,6 +14,8 @@ const categories: CategoryRecord[] = [
     description: "Cinema, jogos e lazer",
     color: "pink",
     icon: "entertainment",
+    createdAt: "2025-11-01T00:00:00.000Z",
+    updatedAt: "2025-11-01T00:00:00.000Z",
   },
   {
     id: "3",
@@ -19,6 +23,8 @@ const categories: CategoryRecord[] = [
     description: "Aplicações e retornos financeiros",
     color: "green",
     icon: "investment",
+    createdAt: "2025-11-01T00:00:00.000Z",
+    updatedAt: "2025-11-01T00:00:00.000Z",
   },
   {
     id: "4",
@@ -26,6 +32,8 @@ const categories: CategoryRecord[] = [
     description: "Compras de supermercado e mantimentos",
     color: "orange",
     icon: "market",
+    createdAt: "2025-11-01T00:00:00.000Z",
+    updatedAt: "2025-11-01T00:00:00.000Z",
   },
   {
     id: "5",
@@ -33,6 +41,8 @@ const categories: CategoryRecord[] = [
     description: "Renda mensal e bonificações",
     color: "green",
     icon: "briefcase",
+    createdAt: "2025-11-01T00:00:00.000Z",
+    updatedAt: "2025-11-01T00:00:00.000Z",
   },
   {
     id: "6",
@@ -40,6 +50,8 @@ const categories: CategoryRecord[] = [
     description: "Medicamentos, consultas e exames",
     color: "red",
     icon: "health",
+    createdAt: "2025-11-01T00:00:00.000Z",
+    updatedAt: "2025-11-01T00:00:00.000Z",
   },
   {
     id: "7",
@@ -47,6 +59,8 @@ const categories: CategoryRecord[] = [
     description: "Gasolina, transporte público e viagens",
     color: "purple",
     icon: "car",
+    createdAt: "2025-11-01T00:00:00.000Z",
+    updatedAt: "2025-11-01T00:00:00.000Z",
   },
   {
     id: "8",
@@ -54,6 +68,8 @@ const categories: CategoryRecord[] = [
     description: "Energia, água, internet e telefone",
     color: "yellow",
     icon: "energy",
+    createdAt: "2025-11-01T00:00:00.000Z",
+    updatedAt: "2025-11-01T00:00:00.000Z",
   },
 ];
 
@@ -176,9 +192,15 @@ const user: User = {
 };
 
 const db = {
-  user,
-  categories,
-  transactions,
+  user: structuredClone(user),
+  categories: structuredClone(categories),
+  transactions: structuredClone(transactions),
 };
 
-export { categoryRef, db };
+function resetDb() {
+  db.user = structuredClone(user);
+  db.categories = structuredClone(categories);
+  db.transactions = structuredClone(transactions);
+}
+
+export { categoryRef, db, resetDb };

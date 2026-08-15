@@ -5,10 +5,12 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll } from "vitest";
 
 import { authHandlers } from "@/mocks/api/auth";
+import { categoryHandlers } from "@/mocks/api/category";
+import { resetDb } from "@/mocks/data";
 import { apolloClient } from "@/services/apollo";
 import { useAuthStore } from "@/stores/auth";
 
-export const server = setupServer(...authHandlers);
+export const server = setupServer(...authHandlers, ...categoryHandlers);
 
 globalThis.ResizeObserver = class {
   observe() {}
@@ -39,6 +41,7 @@ beforeAll(() => {
 
 afterEach(async () => {
   server.resetHandlers();
+  resetDb();
   cleanup();
   localStorage.clear();
   await apolloClient.clearStore();

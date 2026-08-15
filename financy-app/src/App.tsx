@@ -7,10 +7,7 @@ import {
   TransactionRowSkeleton,
 } from "@/components/transaction-row";
 import { Card } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-} from "@/components/ui/table";
+import { Table, TableBody } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { InputField } from "@/components/ui/input-field";
@@ -42,6 +39,8 @@ const exampleCategory: Category = {
   icon: "food",
   transactionsCount: 12,
   total: 542.3,
+  createdAt: "2025-11-01T00:00:00.000Z",
+  updatedAt: "2025-11-01T00:00:00.000Z",
 };
 
 const exampleTransaction: Transaction = {

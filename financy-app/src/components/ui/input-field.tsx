@@ -87,10 +87,7 @@ function InputField({
       </div>
 
       {description ? (
-        <FieldDescription
-          id={helperId}
-          className={cn(error && "text-danger")}
-        >
+        <FieldDescription id={helperId} className={cn(error && "text-danger")}>
           {description}
         </FieldDescription>
       ) : null}

@@ -1,20 +1,37 @@
+import { useMutation, useQuery } from "@apollo/client/react";
 import { ArrowUpDown, Plus, Tag as TagIcon } from "lucide-react";
+import toast from "react-hot-toast";
 
 import { CategoryCard, CategoryCardSkeleton } from "@/components/category-card";
-import { DialogCreateCategory } from "@/components/dialog-create-category";
+import { EmptyList } from "@/components/empty-list";
+import { DialogCategoryForm } from "@/components/dialog-category-form";
 import { SummaryCard, SummaryCardSkeleton } from "@/components/summary-card";
 import { Button } from "@/components/ui/button";
 import { getCategoryIcon } from "@/lib/category-icons";
 import {
-  useCategories,
-  useCategoriesSummary,
-  useDeleteCategory,
+  DELETE_CATEGORY,
+  GET_CATEGORIES,
+  GET_CATEGORIES_SUMMARY,
+  REFETCH_CATEGORIES,
 } from "@/services";
 
 function Categories() {
-  const { data: categories, isLoading } = useCategories();
-  const { data: summary, isLoading: isLoadingSummary } = useCategoriesSummary();
-  const { mutate: deleteCategory, isPending } = useDeleteCategory();
+  const { data, loading: isLoading } = useQuery(GET_CATEGORIES);
+  const { data: summaryData, loading: isLoadingSummary } = useQuery(
+    GET_CATEGORIES_SUMMARY,
+  );
+
+  const [deleteCategory, { loading: isPending }] = useMutation(
+    DELETE_CATEGORY,
+    {
+      refetchQueries: REFETCH_CATEGORIES,
+      onCompleted: () => toast.success("Categoria excluída com sucesso."),
+      onError: (error) => toast.error(error.message),
+    },
+  );
+
+  const categories = data?.getCategories;
+  const summary = summaryData?.getCategoriesSummary;
 
   const mostUsedIcon = summary?.mostUsed
     ? getCategoryIcon(summary.mostUsed.icon)
@@ -51,12 +68,12 @@ function Categories() {
           </p>
         </div>
 
-        <DialogCreateCategory>
+        <DialogCategoryForm>
           <Button size="sm">
             <Plus />
             Nova categoria
           </Button>
-        </DialogCreateCategory>
+        </DialogCategoryForm>
       </div>
 
       <section className="grid gap-6 md:grid-cols-3">
@@ -75,20 +92,36 @@ function Categories() {
             ))}
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-        {isLoading
-          ? Array.from({ length: 8 }, (_, index) => (
-              <CategoryCardSkeleton key={index} />
-            ))
-          : categories?.map((category) => (
-              <CategoryCard
-                key={category.id}
-                category={category}
-                onDelete={deleteCategory}
-                isDeleting={isPending}
-              />
-            ))}
-      </section>
+      {!isLoading && categories?.length === 0 ? (
+        <EmptyList
+          icon={TagIcon}
+          title="Nenhuma categoria por aqui"
+          description="Crie sua primeira categoria para organizar suas transações."
+          action={
+            <DialogCategoryForm>
+              <Button size="sm">
+                <Plus />
+                Nova categoria
+              </Button>
+            </DialogCategoryForm>
+          }
+        />
+      ) : (
+        <section className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+          {isLoading
+            ? Array.from({ length: 8 }, (_, index) => (
+                <CategoryCardSkeleton key={index} />
+              ))
+            : categories?.map((category) => (
+                <CategoryCard
+                  key={category.id}
+                  category={category}
+                  onDelete={(id) => deleteCategory({ variables: { id } })}
+                  isDeleting={isPending}
+                />
+              ))}
+        </section>
+      )}
     </div>
   );
 }

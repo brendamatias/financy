@@ -1,78 +1,121 @@
-import { HttpResponse, delay, http } from "msw";
+import { HttpResponse, delay, graphql } from "msw";
 
 import { db } from "@/mocks/data";
 
-function withStats(category: CategoryRecord): Category {
-  const transactions = db.transactions.filter(
-    (transaction) => transaction.category.id === category.id,
-  );
+const api = graphql.link(import.meta.env.VITE_GRAPHQL_URL);
 
-  return {
-    ...category,
-    transactionsCount: transactions.length,
-    total: transactions.reduce((total, item) => total + item.amount, 0),
-  };
+function withTypename(category: Category) {
+  return { __typename: "CategoryModel", ...category };
 }
 
 export const categoryHandlers = [
-  http.get("/api/categories", async () => {
+  api.query<CategoriesResponse>("GetCategories", async () => {
     await delay(300);
 
-    return HttpResponse.json(db.categories.map(withStats));
+    return HttpResponse.json({
+      data: { getCategories: db.categories.map(withTypename) },
+    });
   }),
 
-  http.get("/api/categories/summary", async () => {
+  api.query<CategoriesSummaryResponse>("GetCategoriesSummary", async () => {
     await delay(300);
 
-    const categories = db.categories.map(withStats);
-
-    const mostUsed = [...categories].sort(
-      (a, b) => b.transactionsCount - a.transactionsCount,
+    const mostUsed = [...db.categories].sort(
+      (a, b) => (b.transactionsCount ?? 0) - (a.transactionsCount ?? 0),
     )[0];
 
     return HttpResponse.json({
-      categoriesCount: categories.length,
-      transactionsCount: db.transactions.length,
-      mostUsed: mostUsed
-        ? { name: mostUsed.name, color: mostUsed.color, icon: mostUsed.icon }
-        : null,
-    } satisfies CategoriesSummary);
+      data: {
+        getCategoriesSummary: {
+          __typename: "CategoriesSummaryModel",
+          categoriesCount: db.categories.length,
+          transactionsCount: db.transactions.length,
+          mostUsed: mostUsed
+            ? {
+                __typename: "CategoryModel",
+                name: mostUsed.name,
+                color: mostUsed.color,
+                icon: mostUsed.icon,
+              }
+            : null,
+        },
+      },
+    });
   }),
 
-  http.post("/api/categories", async ({ request }) => {
+  api.mutation<CreateCategoryResponse, { data: CreateCategoryRequest }>(
+    "CreateCategory",
+    async ({ variables }) => {
+      await delay(400);
+
+      const alreadyExists = db.categories.some(
+        (category) => category.name === variables.data.name,
+      );
+
+      if (alreadyExists) {
+        return HttpResponse.json({
+          errors: [{ message: "Categoria já existe!" }],
+        });
+      }
+
+      const category: Category = {
+        id: crypto.randomUUID(),
+        ...variables.data,
+        transactionsCount: 0,
+        total: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      db.categories.push(category);
+
+      return HttpResponse.json({
+        data: { createCategory: withTypename(category) },
+      });
+    },
+  ),
+
+  api.mutation<
+    UpdateCategoryResponse,
+    { id: string; data: UpdateCategoryRequest }
+  >("UpdateCategory", async ({ variables }) => {
     await delay(400);
 
-    const input = (await request.json()) as CreateCategoryRequest;
+    const category = db.categories.find((item) => item.id === variables.id);
 
-    const category: CategoryRecord = {
-      id: crypto.randomUUID(),
-      name: input.name,
-      description: input.description,
-      color: input.color,
-      icon: input.icon,
-    };
-
-    db.categories.push(category);
-
-    return HttpResponse.json(withStats(category), { status: 201 });
-  }),
-
-  http.delete("/api/categories/:id", async ({ params }) => {
-    await delay(300);
-
-    const index = db.categories.findIndex(
-      (category) => category.id === params.id,
-    );
-
-    if (index < 0) {
-      return HttpResponse.json(
-        { message: "Categoria não encontrada." },
-        { status: 404 },
-      );
+    if (!category) {
+      return HttpResponse.json({
+        errors: [{ message: "Categoria não encontrada!" }],
+      });
     }
 
-    db.categories.splice(index, 1);
+    Object.assign(category, variables.data, {
+      updatedAt: new Date().toISOString(),
+    });
 
-    return new HttpResponse(null, { status: 204 });
+    return HttpResponse.json({
+      data: { updateCategory: withTypename(category) },
+    });
   }),
+
+  api.mutation<DeleteCategoryResponse, { id: string }>(
+    "DeleteCategory",
+    async ({ variables }) => {
+      await delay(300);
+
+      const index = db.categories.findIndex(
+        (category) => category.id === variables.id,
+      );
+
+      if (index < 0) {
+        return HttpResponse.json({
+          errors: [{ message: "Categoria não encontrada!" }],
+        });
+      }
+
+      db.categories.splice(index, 1);
+
+      return HttpResponse.json({ data: { deleteCategory: true } });
+    },
+  ),
 ];

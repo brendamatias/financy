@@ -1,6 +1,7 @@
 import { SquarePen, Trash } from "lucide-react";
 
 import { CategoryIcon } from "@/components/category-icon";
+import { DialogCategoryForm } from "@/components/dialog-category-form";
 import { Card } from "@/components/ui/card";
 import { IconButton } from "@/components/ui/icon-button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,9 +35,11 @@ function CategoryCard({
             <Trash />
           </IconButton>
 
-          <IconButton aria-label={`Editar categoria ${category.name}`}>
-            <SquarePen />
-          </IconButton>
+          <DialogCategoryForm category={category}>
+            <IconButton aria-label={`Editar categoria ${category.name}`}>
+              <SquarePen />
+            </IconButton>
+          </DialogCategoryForm>
         </div>
       </div>
 
@@ -51,7 +54,7 @@ function CategoryCard({
         <Tag variant={category.color}>{category.name}</Tag>
 
         <span className="text-sm text-gray-600">
-          {category.transactionsCount}{" "}
+          {category.transactionsCount ?? 0}{" "}
           {category.transactionsCount === 1 ? "item" : "itens"}
         </span>
       </div>

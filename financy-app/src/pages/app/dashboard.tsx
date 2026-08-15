@@ -1,3 +1,4 @@
+import { useQuery } from "@apollo/client/react";
 import {
   ChevronRight,
   CircleArrowDown,
@@ -18,14 +19,13 @@ import { Tag } from "@/components/ui/tag";
 import { getCategoryIcon } from "@/lib/category-icons";
 import { formatCurrency, formatDate, formatSignedCurrency } from "@/lib/format";
 import {
-  useCategories,
+  GET_CATEGORIES,
   useDashboardSummary,
   useTransactions,
 } from "@/services";
 
 const RECENT_TRANSACTIONS = 5;
 const RECENT_CATEGORIES = 5;
-
 function SectionHeader({
   title,
   action,
@@ -53,7 +53,9 @@ function Dashboard() {
   const { data: summary, isLoading: isLoadingSummary } = useDashboardSummary();
   const { data: transactions, isLoading: isLoadingTransactions } =
     useTransactions({ page: 1, pageSize: RECENT_TRANSACTIONS });
-  const { data: categories, isLoading: isLoadingCategories } = useCategories();
+  const { data: categoriesData, loading: isLoadingCategories } =
+    useQuery(GET_CATEGORIES);
+  const categories = categoriesData?.getCategories;
 
   const summaryCards = [
     {
@@ -77,7 +79,7 @@ function Dashboard() {
   ];
 
   const topCategories = [...(categories ?? [])]
-    .sort((a, b) => b.total - a.total)
+    .sort((a, b) => (b.total ?? 0) - (a.total ?? 0))
     .slice(0, RECENT_CATEGORIES);
 
   return (
@@ -199,12 +201,12 @@ function Dashboard() {
                     <Tag variant={category.color}>{category.name}</Tag>
 
                     <span className="ml-auto text-sm text-gray-600">
-                      {category.transactionsCount}{" "}
+                      {category.transactionsCount ?? 0}{" "}
                       {category.transactionsCount === 1 ? "item" : "itens"}
                     </span>
 
                     <strong className="text-sm font-semibold text-gray-800">
-                      {formatCurrency(category.total)}
+                      {formatCurrency(category.total ?? 0)}
                     </strong>
                   </li>
                 ))}

@@ -1,5 +1,6 @@
-import * as React from "react";
+import { useQuery } from "@apollo/client/react";
 import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
+import * as React from "react";
 
 import { DialogCreateTransaction } from "@/components/dialog-create-transaction";
 import {
@@ -20,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  useCategories,
+  GET_CATEGORIES,
   useDeleteTransaction,
   useTransactionPeriods,
   useTransactions,
@@ -33,7 +34,6 @@ const typeOptions = [
   { value: "income", label: "Entrada" },
   { value: "expense", label: "Saída" },
 ];
-
 function Transactions() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [type, setType] = React.useState<TransactionFilters["type"]>("all");
@@ -41,7 +41,8 @@ function Transactions() {
   const [period, setPeriod] = React.useState("");
   const [page, setPage] = React.useState(1);
 
-  const { data: categories } = useCategories();
+  const { data: categoriesData } = useQuery(GET_CATEGORIES);
+  const categories = categoriesData?.getCategories;
   const { data: periods } = useTransactionPeriods();
   const { data, isLoading } = useTransactions({
     page,
