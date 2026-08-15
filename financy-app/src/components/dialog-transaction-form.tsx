@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@apollo/client/react";
+import { useLazyQuery, useMutation, useQuery } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleArrowDown, CircleArrowUp } from "lucide-react";
 import * as React from "react";
@@ -14,8 +14,10 @@ import toast from "react-hot-toast";
 
 import {
   CREATE_TRANSACTION,
+  GET_TRANSACTION,
   LIST_CATEGORIES,
   REFETCH_TRANSACTIONS,
+  UPDATE_TRANSACTION,
 } from "@/lib/graphql";
 
 const types = [
@@ -70,23 +72,24 @@ function parseCurrency(value: string) {
   return Number(value.replace(/\./g, "").replace(",", "."));
 }
 
-function DialogCreateTransaction({ children }: { children: React.ReactNode }) {
+function toCurrencyInput(value: number) {
+  return value.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function DialogTransactionForm({
+  children,
+  transactionId,
+}: {
+  children: React.ReactNode;
+  transactionId?: string;
+}) {
+  const isEditing = Boolean(transactionId);
   const { data: categoriesData } = useQuery(LIST_CATEGORIES);
   const categories = categoriesData?.listCategories;
   const [open, setOpen] = React.useState(false);
-
-  const [createTransaction, { loading: isPending }] = useMutation(
-    CREATE_TRANSACTION,
-    {
-      refetchQueries: REFETCH_TRANSACTIONS,
-      onCompleted: () => {
-        toast.success("Transação criada com sucesso.");
-        reset(defaultValues);
-        setOpen(false);
-      },
-      onError: (error) => toast.error(error.message),
-    },
-  );
 
   const {
     register,
@@ -99,39 +102,95 @@ function DialogCreateTransaction({ children }: { children: React.ReactNode }) {
     defaultValues,
   });
 
+  const [loadTransaction, { loading: isLoadingTransaction }] =
+    useLazyQuery(GET_TRANSACTION);
+
+  const mutationOptions = {
+    refetchQueries: REFETCH_TRANSACTIONS,
+    onCompleted: () => {
+      toast.success(
+        isEditing
+          ? "Transação atualizada com sucesso."
+          : "Transação criada com sucesso.",
+      );
+      setOpen(false);
+    },
+    onError: (error: Error) => toast.error(error.message),
+  };
+
+  const [createTransaction, { loading: isCreating }] = useMutation(
+    CREATE_TRANSACTION,
+    mutationOptions,
+  );
+
+  const [updateTransaction, { loading: isUpdating }] = useMutation(
+    UPDATE_TRANSACTION,
+    mutationOptions,
+  );
+
+  const isPending = isCreating || isUpdating;
+
+  React.useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    reset(defaultValues);
+
+    if (!transactionId) {
+      return;
+    }
+
+    loadTransaction({ variables: { id: transactionId } }).then(
+      ({ data, error }) => {
+        if (error) {
+          toast.error(error.message);
+          return;
+        }
+
+        if (data) {
+          const transaction = data.getTransaction;
+
+          reset({
+            type: transaction.type,
+            description: transaction.description,
+            date: transaction.date.split("T")[0],
+            amount: toCurrencyInput(transaction.amount),
+            categoryId: transaction.categoryId,
+          });
+        }
+      },
+    );
+  }, [open, transactionId, loadTransaction, reset]);
+
   const categoryOptions = (categories ?? []).map((category) => ({
     value: category.id,
     label: category.name,
   }));
 
   function onSubmit(data: TransactionFormData) {
-    createTransaction({
-      variables: {
-        data: {
-          description: data.description,
-          date: data.date,
-          amount: parseCurrency(data.amount),
-          type: data.type,
-          categoryId: data.categoryId,
-        },
-      },
-    });
-  }
+    const variables = {
+      description: data.description,
+      date: data.date,
+      amount: parseCurrency(data.amount),
+      type: data.type,
+      categoryId: data.categoryId,
+    };
 
-  function handleOpenChange(next: boolean) {
-    setOpen(next);
-
-    if (!next) {
-      reset(defaultValues);
+    if (transactionId) {
+      updateTransaction({ variables: { id: transactionId, data: variables } });
+      return;
     }
+
+    createTransaction({ variables: { data: variables } });
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
       <DialogContent
-        title="Nova transação"
+        title={isEditing ? "Editar transação" : "Nova transação"}
         description="Registre sua despesa ou receita"
       >
         <form
@@ -213,7 +272,11 @@ function DialogCreateTransaction({ children }: { children: React.ReactNode }) {
             )}
           />
 
-          <Button type="submit" className="mt-2 w-full" disabled={isPending}>
+          <Button
+            type="submit"
+            className="mt-2 w-full"
+            disabled={isPending || isLoadingTransaction}
+          >
             {isPending ? "Salvando..." : "Salvar"}
           </Button>
         </form>
@@ -222,4 +285,4 @@ function DialogCreateTransaction({ children }: { children: React.ReactNode }) {
   );
 }
 
-export { DialogCreateTransaction };
+export { DialogTransactionForm };

@@ -45,3 +45,16 @@ export const LIST_TRANSACTION_PERIODS: TypedDocumentNode<TransactionPeriodsRespo
     listTransactionPeriods
   }
 `;
+
+export const GET_TRANSACTION: TypedDocumentNode<
+  GetTransactionResponse,
+  { id: string }
+> = gql`
+  ${TRANSACTION_FRAGMENT}
+
+  query GetTransaction($id: String!) {
+    getTransaction(id: $id) {
+      ...TransactionFields
+    }
+  }
+`;

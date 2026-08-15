@@ -50,6 +50,14 @@ interface CreateTransactionResponse {
   createTransaction: Transaction;
 }
 
+interface UpdateTransactionResponse {
+  updateTransaction: Transaction;
+}
+
+interface GetTransactionResponse {
+  getTransaction: Transaction;
+}
+
 interface DeleteTransactionResponse {
   deleteTransaction: boolean;
 }

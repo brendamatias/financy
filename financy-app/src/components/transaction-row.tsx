@@ -2,6 +2,7 @@ import { SquarePen, Trash } from "lucide-react";
 
 import { CategoryIcon } from "@/components/category-icon";
 import { DialogConfirmDelete } from "@/components/dialog-confirm-delete";
+import { DialogTransactionForm } from "@/components/dialog-transaction-form";
 import { IconButton } from "@/components/ui/icon-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -84,9 +85,11 @@ function TransactionRow({
             </IconButton>
           </DialogConfirmDelete>
 
-          <IconButton aria-label={`Editar ${transaction.description}`}>
-            <SquarePen />
-          </IconButton>
+          <DialogTransactionForm transactionId={transaction.id}>
+            <IconButton aria-label={`Editar ${transaction.description}`}>
+              <SquarePen />
+            </IconButton>
+          </DialogTransactionForm>
         </div>
       </TableCell>
     </TableRow>

@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import * as React from "react";
 
-import { DialogCreateTransaction } from "@/components/dialog-create-transaction";
+import { DialogTransactionForm } from "@/components/dialog-transaction-form";
 import {
   TransactionRow,
   TransactionRowSkeleton,
@@ -110,12 +110,12 @@ function Transactions() {
           </p>
         </div>
 
-        <DialogCreateTransaction>
+        <DialogTransactionForm>
           <Button size="sm">
             <Plus />
             Nova transação
           </Button>
-        </DialogCreateTransaction>
+        </DialogTransactionForm>
       </div>
 
       <Card className="grid gap-4 py-5 sm:grid-cols-2 md:grid-cols-4">

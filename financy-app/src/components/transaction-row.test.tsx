@@ -66,6 +66,22 @@ describe("TransactionRow", () => {
     expect(onDelete).toHaveBeenCalledWith(transaction.id);
   });
 
+  it("opens the edit dialog", async () => {
+    const transaction = expense();
+
+    const { user } = renderRow(<TransactionRow transaction={transaction} />);
+
+    await user.click(
+      screen.getByRole("button", {
+        name: `Editar ${transaction.description}`,
+      }),
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: "Editar transação" }),
+    ).toBeVisible();
+  });
+
   it("disables the delete button while deleting", async () => {
     const transaction = expense();
 

@@ -73,6 +73,27 @@ export const transactionHandlers = [
     return HttpResponse.json({ data: { listTransactionPeriods: periods } });
   }),
 
+  api.query<GetTransactionResponse, { id: string }>(
+    "GetTransaction",
+    async ({ variables }) => {
+      await delay(300);
+
+      const transaction = db.transactions.find(
+        (item) => item.id === variables.id,
+      );
+
+      if (!transaction) {
+        return HttpResponse.json({
+          errors: [{ message: "Transação não encontrada!" }],
+        });
+      }
+
+      return HttpResponse.json({
+        data: { getTransaction: withTypename(transaction) },
+      });
+    },
+  ),
+
   api.mutation<CreateTransactionResponse, { data: CreateTransactionRequest }>(
     "CreateTransaction",
     async ({ variables }) => {
@@ -97,6 +118,38 @@ export const transactionHandlers = [
       });
     },
   ),
+
+  api.mutation<
+    UpdateTransactionResponse,
+    { id: string; data: UpdateTransactionRequest }
+  >("UpdateTransaction", async ({ variables }) => {
+    await delay(400);
+
+    const transaction = db.transactions.find(
+      (item) => item.id === variables.id,
+    );
+
+    if (!transaction) {
+      return HttpResponse.json({
+        errors: [{ message: "Transação não encontrada!" }],
+      });
+    }
+
+    Object.assign(transaction, {
+      ...variables.data,
+      ...(variables.data.amount !== undefined
+        ? { amount: Math.abs(variables.data.amount) }
+        : {}),
+      ...(variables.data.categoryId
+        ? { category: categoryRef(variables.data.categoryId) }
+        : {}),
+      updatedAt: new Date().toISOString(),
+    });
+
+    return HttpResponse.json({
+      data: { updateTransaction: withTypename(transaction) },
+    });
+  }),
 
   api.mutation<DeleteTransactionResponse, { id: string }>(
     "DeleteTransaction",

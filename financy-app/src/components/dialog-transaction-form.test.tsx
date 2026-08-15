@@ -1,17 +1,17 @@
 import { screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { DialogCreateTransaction } from "@/components/dialog-create-transaction";
+import { DialogTransactionForm } from "@/components/dialog-transaction-form";
 import { Button } from "@/components/ui/button";
 import { todayISO } from "@/lib/format";
 import { db } from "@/mocks/data";
 import { renderWithRouter } from "@/tests/render";
 
-async function openDialog() {
+async function openDialog(transactionId?: string) {
   const { user } = renderWithRouter(
-    <DialogCreateTransaction>
+    <DialogTransactionForm transactionId={transactionId}>
       <Button>Abrir</Button>
-    </DialogCreateTransaction>,
+    </DialogTransactionForm>,
   );
 
   await user.click(screen.getByRole("button", { name: "Abrir" }));
@@ -27,7 +27,7 @@ function tomorrowISO() {
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
-describe("DialogCreateTransaction", () => {
+describe("DialogTransactionForm", () => {
   it("requires description, date, amount and category", async () => {
     const { user } = await openDialog();
 
@@ -103,5 +103,100 @@ describe("DialogCreateTransaction", () => {
 
     expect(db.transactions).toHaveLength(total + 1);
     expect(db.transactions[0].description).toBe("Café da manhã");
+  });
+
+  it("clears the form after creating a transaction", async () => {
+    const { user } = await openDialog();
+
+    await user.type(screen.getByLabelText("Descrição"), "Padaria");
+    await user.type(screen.getByLabelText("Data"), todayISO());
+    await user.type(screen.getByLabelText("Valor"), "1550");
+
+    await user.click(screen.getByLabelText("Categoria"));
+    await user.click(
+      await screen.findByRole("option", { name: "Alimentação" }),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Salvar" }));
+
+    await waitFor(() =>
+      expect(screen.queryByLabelText("Descrição")).toBeNull(),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Abrir" }));
+
+    expect(await screen.findByLabelText("Descrição")).toHaveValue("");
+    expect(screen.getByLabelText("Valor")).toHaveValue("");
+  });
+});
+
+describe("DialogTransactionForm editing", () => {
+  it("prefills the form with the transaction", async () => {
+    const transaction = db.transactions[0];
+
+    await openDialog(transaction.id);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Descrição")).toHaveValue(
+        transaction.description,
+      ),
+    );
+    expect(screen.getByLabelText("Data")).toHaveValue(
+      transaction.date.split("T")[0],
+    );
+    expect(screen.getByLabelText("Valor")).toHaveValue(
+      transaction.amount.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+    );
+    expect(screen.getByRole("heading", { name: "Editar transação" })).toBeVisible();
+  });
+
+  it("updates the transaction", async () => {
+    const transaction = db.transactions[0];
+    const { user } = await openDialog(transaction.id);
+
+    const description = screen.getByLabelText("Descrição");
+
+    await waitFor(() =>
+      expect(description).toHaveValue(transaction.description),
+    );
+
+    await user.clear(description);
+    await user.type(description, "Almoço editado");
+    await user.click(screen.getByRole("button", { name: "Salvar" }));
+
+    await waitFor(() =>
+      expect(document.body).toHaveTextContent(
+        "Transação atualizada com sucesso.",
+      ),
+    );
+
+    expect(db.transactions[0].description).toBe("Almoço editado");
+  });
+
+  it("keeps the amount that was loaded when only the description changes", async () => {
+    const transaction = db.transactions[0];
+    const amount = transaction.amount;
+    const { user } = await openDialog(transaction.id);
+
+    const description = screen.getByLabelText("Descrição");
+
+    await waitFor(() =>
+      expect(description).toHaveValue(transaction.description),
+    );
+
+    await user.clear(description);
+    await user.type(description, "Só a descrição");
+    await user.click(screen.getByRole("button", { name: "Salvar" }));
+
+    await waitFor(() =>
+      expect(document.body).toHaveTextContent(
+        "Transação atualizada com sucesso.",
+      ),
+    );
+
+    expect(db.transactions[0].amount).toBe(amount);
   });
 });

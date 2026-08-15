@@ -11,7 +11,7 @@ import { Link as RouterLink } from "react-router-dom";
 
 import { CategoryIcon } from "@/components/category-icon";
 import { EmptyList } from "@/components/empty-list";
-import { DialogCreateTransaction } from "@/components/dialog-create-transaction";
+import { DialogTransactionForm } from "@/components/dialog-transaction-form";
 import { SummaryCard, SummaryCardSkeleton } from "@/components/summary-card";
 import { TitleSection } from "@/components/title-section";
 import { Card } from "@/components/ui/card";
@@ -215,14 +215,14 @@ function Dashboard() {
           )}
 
           <div className="my-5 flex items-center justify-center">
-            <DialogCreateTransaction>
+            <DialogTransactionForm>
               <Link asChild>
                 <button type="button">
                   <Plus className="size-5" />
                   Nova transação
                 </button>
               </Link>
-            </DialogCreateTransaction>
+            </DialogTransactionForm>
           </div>
         </Card>
 

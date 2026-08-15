@@ -23,6 +23,19 @@ export const CREATE_TRANSACTION: TypedDocumentNode<
   }
 `;
 
+export const UPDATE_TRANSACTION: TypedDocumentNode<
+  UpdateTransactionResponse,
+  { id: string; data: UpdateTransactionRequest }
+> = gql`
+  ${TRANSACTION_FRAGMENT}
+
+  mutation UpdateTransaction($id: String!, $data: UpdateTransactionInput!) {
+    updateTransaction(id: $id, data: $data) {
+      ...TransactionFields
+    }
+  }
+`;
+
 export const DELETE_TRANSACTION: TypedDocumentNode<
   DeleteTransactionResponse,
   { id: string }
