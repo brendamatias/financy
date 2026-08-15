@@ -13,9 +13,7 @@ describe("Categories page", () => {
   it("renders the categories returned by the api", async () => {
     renderPage();
 
-    expect(
-      await screen.findByText(db.categories[0].description),
-    ).toBeVisible();
+    expect(await screen.findByText(db.categories[0].description)).toBeVisible();
 
     expect(
       screen.getByRole("button", {
@@ -36,9 +34,7 @@ describe("Categories page", () => {
 
     renderPage();
 
-    expect(
-      await screen.findByText("Nenhuma categoria por aqui"),
-    ).toBeVisible();
+    expect(await screen.findByText("Nenhuma categoria por aqui")).toBeVisible();
   });
 
   it("deletes a category", async () => {
@@ -52,7 +48,9 @@ describe("Categories page", () => {
     await user.click(deleteButton);
 
     await waitFor(() =>
-      expect(document.body).toHaveTextContent("Categoria excluída com sucesso."),
+      expect(document.body).toHaveTextContent(
+        "Categoria excluída com sucesso.",
+      ),
     );
 
     await waitFor(() => expect(screen.queryByText(target.name)).toBeNull());

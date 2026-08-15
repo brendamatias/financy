@@ -1,6 +1,15 @@
 import { prismaClient } from "../../prisma/prisma";
-import { ListTransactionsInput } from "../dtos/input/transaction.input";
-import { listTransactionsSchema } from "../schemas/transaction.schema";
+import {
+  CreateTransactionInput,
+  ListTransactionsInput,
+  UpdateTransactionInput,
+} from "../dtos/input/transaction.input";
+import {
+  createTransactionSchema,
+  listTransactionsSchema,
+  transactionIdSchema,
+  updateTransactionSchema,
+} from "../schemas/transaction.schema";
 import { validate } from "../utils/validate";
 
 function periodToRange(period: string) {
@@ -59,5 +68,84 @@ export class TransactionService {
     `;
 
     return rows.map((row) => row.period);
+  }
+
+  async findTransaction(id: string, userId: string) {
+    const transactionId = validate(transactionIdSchema, id);
+
+    const transaction = await prismaClient.transaction.findFirst({
+      where: { id: transactionId, userId },
+      include: { category: true },
+    });
+
+    if (!transaction) {
+      throw new Error("Transação não encontrada!");
+    }
+
+    return transaction;
+  }
+
+  async createTransaction(input: CreateTransactionInput, userId: string) {
+    const data = validate(createTransactionSchema, input);
+
+    await this.ensureCategory(data.categoryId, userId);
+
+    return prismaClient.transaction.create({
+      data: {
+        description: data.description,
+        amount: data.amount,
+        type: data.type,
+        date: new Date(`${data.date}T00:00:00.000Z`),
+        categoryId: data.categoryId,
+        userId,
+      },
+      include: { category: true },
+    });
+  }
+
+  async updateTransaction(
+    id: string,
+    input: UpdateTransactionInput,
+    userId: string,
+  ) {
+    const transactionId = validate(transactionIdSchema, id);
+    const data = validate(updateTransactionSchema, input);
+
+    await this.findTransaction(transactionId, userId);
+
+    if (data.categoryId) {
+      await this.ensureCategory(data.categoryId, userId);
+    }
+
+    return prismaClient.transaction.update({
+      where: { id: transactionId },
+      data: {
+        ...data,
+        ...(data.date ? { date: new Date(`${data.date}T00:00:00.000Z`) } : {}),
+      },
+      include: { category: true },
+    });
+  }
+
+  async deleteTransaction(id: string, userId: string) {
+    const transactionId = validate(transactionIdSchema, id);
+
+    await this.findTransaction(transactionId, userId);
+
+    await prismaClient.transaction.delete({ where: { id: transactionId } });
+
+    return true;
+  }
+
+  private async ensureCategory(categoryId: string, userId: string) {
+    const category = await prismaClient.category.findFirst({
+      where: { id: categoryId, userId },
+    });
+
+    if (!category) {
+      throw new Error("Categoria não encontrada!");
+    }
+
+    return category;
   }
 }

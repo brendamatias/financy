@@ -49,12 +49,15 @@ const exampleTransaction: Transaction = {
   date: "2025-11-30",
   amount: 89.5,
   type: "expense",
+  categoryId: "1",
   category: {
     id: "1",
     name: "Alimentação",
     color: "blue",
     icon: "food",
   },
+  createdAt: "2025-11-01T00:00:00.000Z",
+  updatedAt: "2025-11-01T00:00:00.000Z",
 };
 
 function App() {

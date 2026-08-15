@@ -20,7 +20,33 @@ function formatSignedCurrency(value: number) {
 }
 
 function formatDate(value: string) {
-  return dateFormatter.format(new Date(`${value}T00:00:00`));
+  const [year, month, day] = value.split("T")[0].split("-").map(Number);
+
+  return dateFormatter.format(new Date(year, month - 1, day));
 }
 
-export { formatCurrency, formatDate, formatSignedCurrency };
+function todayISO() {
+  const today = new Date();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${today.getFullYear()}-${month}-${day}`;
+}
+
+function formatPeriod(period: string) {
+  const [month, year] = period.split("/").map(Number);
+
+  const label = new Intl.DateTimeFormat("pt-BR", { month: "long" }).format(
+    new Date(year, month - 1, 1),
+  );
+
+  return `${label[0].toUpperCase()}${label.slice(1)} / ${year}`;
+}
+
+export {
+  formatCurrency,
+  formatDate,
+  formatPeriod,
+  formatSignedCurrency,
+  todayISO,
+};

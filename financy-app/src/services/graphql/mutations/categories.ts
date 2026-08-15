@@ -1,15 +1,8 @@
 import { gql, type TypedDocumentNode } from "@apollo/client";
 
-import {
-  CATEGORY_FRAGMENT,
-  LIST_CATEGORIES,
-  GET_CATEGORIES_SUMMARY,
-} from "../queries/categories";
+import { CATEGORY_FRAGMENT } from "../queries/categories";
 
-export const REFETCH_CATEGORIES = [
-  { query: LIST_CATEGORIES },
-  { query: GET_CATEGORIES_SUMMARY },
-];
+export const REFETCH_CATEGORIES = ["ListCategories", "GetCategoriesSummary"];
 
 export const CREATE_CATEGORY: TypedDocumentNode<
   CreateCategoryResponse,

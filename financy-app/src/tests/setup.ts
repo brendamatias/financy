@@ -6,11 +6,16 @@ import { afterAll, afterEach, beforeAll } from "vitest";
 
 import { authHandlers } from "@/mocks/api/auth";
 import { categoryHandlers } from "@/mocks/api/category";
+import { transactionHandlers } from "@/mocks/api/transaction";
 import { resetDb } from "@/mocks/data";
 import { apolloClient } from "@/services/apollo";
 import { useAuthStore } from "@/stores/auth";
 
-export const server = setupServer(...authHandlers, ...categoryHandlers);
+export const server = setupServer(
+  ...authHandlers,
+  ...categoryHandlers,
+  ...transactionHandlers,
+);
 
 globalThis.ResizeObserver = class {
   observe() {}

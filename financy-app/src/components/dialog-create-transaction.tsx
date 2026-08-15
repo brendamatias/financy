@@ -1,4 +1,4 @@
-import { useQuery } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleArrowDown, CircleArrowUp } from "lucide-react";
 import * as React from "react";
@@ -9,7 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { InputField } from "@/components/ui/input-field";
 import { SelectField } from "@/components/ui/select-field";
-import { LIST_CATEGORIES, useCreateTransaction } from "@/services";
+import { todayISO } from "@/lib/format";
+import toast from "react-hot-toast";
+
+import {
+  CREATE_TRANSACTION,
+  LIST_CATEGORIES,
+  REFETCH_TRANSACTIONS,
+} from "@/services";
 
 const types = [
   {
@@ -29,7 +36,10 @@ const types = [
 const schema = z.object({
   type: z.custom<TransactionType>(),
   description: z.string().min(1, "Informe a descrição"),
-  date: z.string().min(1, "Informe a data"),
+  date: z
+    .string()
+    .min(1, "Informe a data")
+    .refine((date) => date <= todayISO(), "A data não pode ser no futuro"),
   amount: z.string().min(1, "Informe o valor"),
   categoryId: z.string().min(1, "Selecione uma categoria"),
 });
@@ -63,8 +73,20 @@ function parseCurrency(value: string) {
 function DialogCreateTransaction({ children }: { children: React.ReactNode }) {
   const { data: categoriesData } = useQuery(LIST_CATEGORIES);
   const categories = categoriesData?.listCategories;
-  const { mutate: createTransaction, isPending } = useCreateTransaction();
   const [open, setOpen] = React.useState(false);
+
+  const [createTransaction, { loading: isPending }] = useMutation(
+    CREATE_TRANSACTION,
+    {
+      refetchQueries: REFETCH_TRANSACTIONS,
+      onCompleted: () => {
+        toast.success("Transação criada com sucesso.");
+        reset(defaultValues);
+        setOpen(false);
+      },
+      onError: (error) => toast.error(error.message),
+    },
+  );
 
   const {
     register,
@@ -83,21 +105,17 @@ function DialogCreateTransaction({ children }: { children: React.ReactNode }) {
   }));
 
   function onSubmit(data: TransactionFormData) {
-    createTransaction(
-      {
-        description: data.description,
-        date: data.date,
-        amount: parseCurrency(data.amount),
-        type: data.type,
-        categoryId: data.categoryId,
-      },
-      {
-        onSuccess: () => {
-          reset(defaultValues);
-          setOpen(false);
+    createTransaction({
+      variables: {
+        data: {
+          description: data.description,
+          date: data.date,
+          amount: parseCurrency(data.amount),
+          type: data.type,
+          categoryId: data.categoryId,
         },
       },
-    );
+    });
   }
 
   function handleOpenChange(next: boolean) {
@@ -155,6 +173,7 @@ function DialogCreateTransaction({ children }: { children: React.ReactNode }) {
             <InputField
               label="Data"
               type="date"
+              max={todayISO()}
               placeholder="Selecione"
               error={errors.date?.message}
               {...register("date")}

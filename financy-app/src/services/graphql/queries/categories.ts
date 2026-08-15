@@ -22,18 +22,16 @@ export const LIST_CATEGORIES: TypedDocumentNode<CategoriesResponse> = gql`
   }
 `;
 
-export const GET_CATEGORY: TypedDocumentNode<
-  CategoryResponse,
-  { id: string }
-> = gql`
-  ${CATEGORY_FRAGMENT}
+export const GET_CATEGORY: TypedDocumentNode<CategoryResponse, { id: string }> =
+  gql`
+    ${CATEGORY_FRAGMENT}
 
-  query GetCategory($id: String!) {
-    getCategory(id: $id) {
-      ...CategoryFields
+    query GetCategory($id: String!) {
+      getCategory(id: $id) {
+        ...CategoryFields
+      }
     }
-  }
-`;
+  `;
 
 export const GET_CATEGORIES_SUMMARY: TypedDocumentNode<CategoriesSummaryResponse> = gql`
   query GetCategoriesSummary {

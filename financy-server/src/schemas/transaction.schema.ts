@@ -10,6 +10,17 @@ export const transactionIdSchema = z
   .trim()
   .min(1, "Informe o id da transação");
 
+function isNotInTheFuture(date: string) {
+  const today = new Date();
+  const todayISO = new Date(
+    Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()),
+  )
+    .toISOString()
+    .slice(0, 10);
+
+  return date <= todayISO;
+}
+
 export const createTransactionSchema = z.object({
   description: z.string().trim().min(1, "Informe a descrição"),
   amount: z
@@ -19,7 +30,8 @@ export const createTransactionSchema = z.object({
   date: z
     .string()
     .trim()
-    .regex(DATE_REGEX, "Informe uma data válida no formato AAAA-MM-DD"),
+    .regex(DATE_REGEX, "Informe uma data válida no formato AAAA-MM-DD")
+    .refine(isNotInTheFuture, "A data não pode ser no futuro"),
   categoryId: z.string().trim().min(1, "Selecione uma categoria"),
 });
 

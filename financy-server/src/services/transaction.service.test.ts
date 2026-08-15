@@ -239,3 +239,93 @@ describe("TransactionService.listPeriods", () => {
     expect(periods).toEqual([]);
   });
 });
+
+function toLocalISODate(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+describe("TransactionService.createTransaction", () => {
+  const base = {
+    description: "Almoço",
+    amount: 42.5,
+    type: "expense",
+    categoryId: "",
+  };
+
+  it("creates a transaction with today's date", async () => {
+    const today = toLocalISODate(new Date());
+
+    const transaction = await transactionService.createTransaction(
+      { ...base, categoryId: foodId, date: today },
+      userId,
+    );
+
+    expect(transaction.description).toBe("Almoço");
+    expect(transaction.userId).toBe(userId);
+  });
+
+  it("rejects a date in the future", async () => {
+    const tomorrow = toLocalISODate(new Date(Date.now() + 24 * 60 * 60 * 1000));
+
+    await expect(
+      transactionService.createTransaction(
+        { ...base, categoryId: foodId, date: tomorrow },
+        userId,
+      ),
+    ).rejects.toThrow("A data não pode ser no futuro");
+  });
+
+  it("accepts a date in the past", async () => {
+    const transaction = await transactionService.createTransaction(
+      { ...base, categoryId: foodId, date: "2020-01-15" },
+      userId,
+    );
+
+    expect(transaction.date.toISOString()).toBe("2020-01-15T00:00:00.000Z");
+  });
+
+  it("rejects a category from another user", async () => {
+    const category = await categoryService.createCategory(
+      { name: "Outra", description: "", color: "red", icon: "health" },
+      otherUserId,
+    );
+
+    await expect(
+      transactionService.createTransaction(
+        { ...base, categoryId: category.id, date: "2025-11-10" },
+        userId,
+      ),
+    ).rejects.toThrow("Categoria não encontrada!");
+  });
+
+  it("rejects an amount of zero or less", async () => {
+    await expect(
+      transactionService.createTransaction(
+        { ...base, amount: 0, categoryId: foodId, date: "2025-11-10" },
+        userId,
+      ),
+    ).rejects.toThrow("O valor deve ser maior que zero");
+  });
+});
+
+describe("TransactionService.updateTransaction", () => {
+  it("rejects a date in the future", async () => {
+    const [transaction] = (
+      await transactionService.listTransactions({}, userId)
+    ).data;
+
+    const tomorrow = toLocalISODate(new Date(Date.now() + 24 * 60 * 60 * 1000));
+
+    await expect(
+      transactionService.updateTransaction(
+        transaction.id,
+        { date: tomorrow },
+        userId,
+      ),
+    ).rejects.toThrow("A data não pode ser no futuro");
+  });
+});

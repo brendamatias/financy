@@ -1,5 +1,6 @@
 import { useQuery } from "@apollo/client/react";
 import {
+  ArrowLeftRight,
   ChevronRight,
   CircleArrowDown,
   CircleArrowUp,
@@ -9,6 +10,7 @@ import {
 import { Link as RouterLink } from "react-router-dom";
 
 import { CategoryIcon } from "@/components/category-icon";
+import { EmptyList } from "@/components/empty-list";
 import { DialogCreateTransaction } from "@/components/dialog-create-transaction";
 import { SummaryCard, SummaryCardSkeleton } from "@/components/summary-card";
 import { TitleSection } from "@/components/title-section";
@@ -20,12 +22,13 @@ import { getCategoryIcon } from "@/lib/category-icons";
 import { formatCurrency, formatDate, formatSignedCurrency } from "@/lib/format";
 import {
   LIST_CATEGORIES,
+  LIST_TRANSACTIONS,
   useDashboardSummary,
-  useTransactions,
 } from "@/services";
 
 const RECENT_TRANSACTIONS = 5;
 const RECENT_CATEGORIES = 5;
+
 function SectionHeader({
   title,
   action,
@@ -51,8 +54,11 @@ function SectionHeader({
 
 function Dashboard() {
   const { data: summary, isLoading: isLoadingSummary } = useDashboardSummary();
-  const { data: transactions, isLoading: isLoadingTransactions } =
-    useTransactions({ page: 1, pageSize: RECENT_TRANSACTIONS });
+  const { data: transactionsData, loading: isLoadingTransactions } = useQuery(
+    LIST_TRANSACTIONS,
+    { variables: { data: { page: 1, pageSize: RECENT_TRANSACTIONS } } },
+  );
+  const transactions = transactionsData?.listTransactions;
   const { data: categoriesData, loading: isLoadingCategories } =
     useQuery(LIST_CATEGORIES);
   const categories = categoriesData?.listCategories;
@@ -108,65 +114,74 @@ function Dashboard() {
             to="/transactions"
           />
 
-          <ul className="flex flex-col">
-            {isLoadingTransactions
-              ? Array.from({ length: RECENT_TRANSACTIONS }, (_, index) => (
-                  <li
-                    key={index}
-                    className="flex h-20 items-center gap-4 border-b border-gray-200 px-6"
-                  >
-                    <Skeleton className="size-10 rounded-lg" />
+          {!isLoadingTransactions && transactions?.data.length === 0 ? (
+            <EmptyList
+              className="rounded-none border-0"
+              icon={ArrowLeftRight}
+              title="Nenhuma transação por aqui"
+              description="Registre sua primeira transação para acompanhar suas finanças."
+            />
+          ) : (
+            <ul className="flex flex-col">
+              {isLoadingTransactions
+                ? Array.from({ length: RECENT_TRANSACTIONS }, (_, index) => (
+                    <li
+                      key={index}
+                      className="flex h-20 items-center gap-4 border-b border-gray-200 px-6"
+                    >
+                      <Skeleton className="size-10 rounded-lg" />
 
-                    <div className="flex flex-1 flex-col gap-1">
-                      <Skeleton className="h-5 w-48" />
-                      <Skeleton className="h-4 w-20" />
-                    </div>
+                      <div className="flex flex-1 flex-col gap-1">
+                        <Skeleton className="h-5 w-48" />
+                        <Skeleton className="h-4 w-20" />
+                      </div>
 
-                    <Skeleton className="h-7 w-24 rounded-full" />
-                    <Skeleton className="h-5 w-28" />
-                  </li>
-                ))
-              : transactions?.data.map((transaction) => (
-                  <li
-                    key={transaction.id}
-                    className="flex h-20 items-center gap-4 border-b border-gray-200 px-6"
-                  >
-                    <CategoryIcon
-                      icon={getCategoryIcon(transaction.category.icon)}
-                      color={transaction.category.color}
-                    />
+                      <Skeleton className="h-7 w-24 rounded-full" />
+                      <Skeleton className="h-5 w-28" />
+                    </li>
+                  ))
+                : transactions?.data.map((transaction) => (
+                    <li
+                      key={transaction.id}
+                      className="flex h-20 items-center gap-4 border-b border-gray-200 px-6"
+                    >
+                      <CategoryIcon
+                        icon={getCategoryIcon(transaction.category.icon)}
+                        color={transaction.category.color}
+                      />
 
-                    <div className="flex flex-1 flex-col">
-                      <span className="text-base font-medium text-gray-800">
-                        {transaction.description}
-                      </span>
-                      <span className="text-sm text-gray-600">
-                        {formatDate(transaction.date)}
-                      </span>
-                    </div>
+                      <div className="flex flex-1 flex-col">
+                        <span className="text-base font-medium text-gray-800">
+                          {transaction.description}
+                        </span>
+                        <span className="text-sm text-gray-600">
+                          {formatDate(transaction.date)}
+                        </span>
+                      </div>
 
-                    <Tag variant={transaction.category.color}>
-                      {transaction.category.name}
-                    </Tag>
+                      <Tag variant={transaction.category.color}>
+                        {transaction.category.name}
+                      </Tag>
 
-                    <div className="flex w-40 items-center justify-end gap-2">
-                      <strong className="text-sm font-semibold text-gray-800">
-                        {formatSignedCurrency(
-                          transaction.type === "expense"
-                            ? -transaction.amount
-                            : transaction.amount,
+                      <div className="flex w-40 items-center justify-end gap-2">
+                        <strong className="text-sm font-semibold text-gray-800">
+                          {formatSignedCurrency(
+                            transaction.type === "expense"
+                              ? -transaction.amount
+                              : transaction.amount,
+                          )}
+                        </strong>
+
+                        {transaction.type === "income" ? (
+                          <CircleArrowUp className="size-4 text-green-base" />
+                        ) : (
+                          <CircleArrowDown className="size-4 text-red-base" />
                         )}
-                      </strong>
-
-                      {transaction.type === "income" ? (
-                        <CircleArrowUp className="size-4 text-green-base" />
-                      ) : (
-                        <CircleArrowDown className="size-4 text-red-base" />
-                      )}
-                    </div>
-                  </li>
-                ))}
-          </ul>
+                      </div>
+                    </li>
+                  ))}
+            </ul>
+          )}
 
           <div className="my-5 flex items-center justify-center">
             <DialogCreateTransaction>

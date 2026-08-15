@@ -1,5 +1,6 @@
-import { useQuery } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
+import toast from "react-hot-toast";
 import * as React from "react";
 
 import { DialogCreateTransaction } from "@/components/dialog-create-transaction";
@@ -12,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import { InputField } from "@/components/ui/input-field";
 import { PaginationButton } from "@/components/ui/pagination-button";
 import { SelectField } from "@/components/ui/select-field";
+import { formatPeriod } from "@/lib/format";
 import {
   Table,
   TableBody,
@@ -21,10 +23,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  DELETE_TRANSACTION,
   LIST_CATEGORIES,
-  useDeleteTransaction,
-  useTransactionPeriods,
-  useTransactions,
+  LIST_TRANSACTIONS,
+  LIST_TRANSACTION_PERIODS,
+  REFETCH_TRANSACTIONS,
 } from "@/services";
 
 const PAGE_SIZE = 10;
@@ -43,20 +46,33 @@ function Transactions() {
 
   const { data: categoriesData } = useQuery(LIST_CATEGORIES);
   const categories = categoriesData?.listCategories;
-  const { data: periods } = useTransactionPeriods();
-  const { data, isLoading } = useTransactions({
-    page,
-    pageSize: PAGE_SIZE,
-    searchQuery,
-    type,
-    categoryId,
-    period,
+  const { data: periodsData } = useQuery(LIST_TRANSACTION_PERIODS);
+  const { data, loading: isLoading } = useQuery(LIST_TRANSACTIONS, {
+    variables: {
+      data: {
+        page,
+        pageSize: PAGE_SIZE,
+        searchQuery,
+        type,
+        categoryId,
+        period: period || undefined,
+      },
+    },
   });
-  const { mutate: deleteTransaction, isPending } = useDeleteTransaction();
 
-  const transactions = data?.data ?? [];
-  const total = data?.meta.total ?? 0;
-  const totalPages = data?.meta.totalPages ?? 1;
+  const [deleteTransaction, { loading: isPending }] = useMutation(
+    DELETE_TRANSACTION,
+    {
+      refetchQueries: REFETCH_TRANSACTIONS,
+      onCompleted: () => toast.success("Transação excluída com sucesso."),
+      onError: (error) => toast.error(error.message),
+    },
+  );
+
+  const periods = periodsData?.listTransactionPeriods;
+  const transactions = data?.listTransactions.data ?? [];
+  const total = data?.listTransactions.meta.total ?? 0;
+  const totalPages = data?.listTransactions.meta.totalPages ?? 1;
   const firstItem = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const lastItem = Math.min(page * PAGE_SIZE, total);
 
@@ -70,7 +86,10 @@ function Transactions() {
 
   const periodOptions = [
     { value: "", label: "Todos os períodos" },
-    ...(periods ?? []).map((item) => ({ value: item, label: item })),
+    ...(periods ?? []).map((item) => ({
+      value: item,
+      label: formatPeriod(item),
+    })),
   ];
 
   function updateFilter(update: () => void) {
@@ -162,7 +181,7 @@ function Transactions() {
                 <TransactionRow
                   key={transaction.id}
                   transaction={transaction}
-                  onDelete={deleteTransaction}
+                  onDelete={(id) => deleteTransaction({ variables: { id } })}
                   isDeleting={isPending}
                 />
               ))

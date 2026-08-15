@@ -6,6 +6,7 @@ interface Pagination {
 }
 
 interface PaginationMeta {
+  __typename?: string;
   page: number;
   pageSize: number;
   total: number;
@@ -13,6 +14,7 @@ interface PaginationMeta {
 }
 
 interface WithPagination<T> {
+  __typename?: string;
   data: T[];
   meta: PaginationMeta;
 }
